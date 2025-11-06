@@ -141,6 +141,25 @@ Item {
             spacing: 20 * ScreenTools.scaleWidth
 
             TextButton {
+                  buttonText: qsTr("定位航点")
+                  height: button_height
+                  width: 200 * ScreenTools.scaleWidth
+                  onClicked: {
+                        // 判断是否成功定位
+                        if (!VkSdkInstance.vehicleManager.activeVehicle) return
+                        let activeVehicle = VkSdkInstance.vehicleManager.activeVehicle
+                        let gpsFixType = activeVehicle.GNSS1.gpsInputFixType
+                        if (gpsFixType > 1) {
+                            let gpsLat = activeVehicle.GNSS1.gpsInputLatitude
+                            let gpsLon = activeVehicle.GNSS1.gpsInputLongitude
+                            mapControl.addWaypointByCoordinate(gpsLon, gpsLat)
+                        } else {
+                            console.warn("GPS未定位,无法添加航点")
+                        }
+                  }
+            }
+
+            TextButton {
                   buttonText: qsTr("上传航点")
                   height: button_height
                   width: 200 * ScreenTools.scaleWidth

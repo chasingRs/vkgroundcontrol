@@ -408,11 +408,15 @@ FlightMap {
     }
 
     onMapClicked: {
-        addPoint(position)
+        addPoint(Qt.point(position.x,position.y))
     }
 
-    function addPoint(mouse) {
-        var coordinate = _root.toCoordinate(Qt.point(mouse.x, mouse.y), false)
+    /**
+     * @brief 通过屏幕坐标添加航点
+     * @param point Qt.point(x, y) - 屏幕像素坐标
+     */
+    function addPoint(point) {
+        var coordinate = _root.toCoordinate(point, false)
         coordinate.latitude = coordinate.latitude.toFixed(_decimalPlaces)
         coordinate.longitude = coordinate.longitude.toFixed(_decimalPlaces)
         if (add_type === 1) {
@@ -425,7 +429,6 @@ FlightMap {
                             _decimalPlaces)
                 coordinate.altitude = coordinate.altitude.toFixed(
                             _decimalPlaces)
-                var point = Qt.point(mouse.x, mouse.y)
                 var coord = _root.toCoordinate(point)
                 missionModel.addWpt(coordinate.longitude,
                                     coordinate.latitude) //添加B点
@@ -442,7 +445,6 @@ FlightMap {
                             _decimalPlaces)
                 coordinate.altitude = coordinate.altitude.toFixed(
                             _decimalPlaces)
-                var point = Qt.point(mouse.x, mouse.y)
                 var coord = _root.toCoordinate(point)
                 areaListModel.addWpt(coordinate.longitude, coordinate.latitude)
             }
@@ -467,6 +469,25 @@ FlightMap {
             }
         }
         mousePressed = false
+    }
+
+    /**
+     * @brief 通过经纬度坐标添加航点
+     * @param longitude 经度
+     * @param latitude 纬度
+     */
+    function addWaypointByCoordinate(longitude, latitude) {
+        _root.focus = true
+        if (add_type === 1) {
+            // 手动添加航点
+            missionModel.addWpt(longitude, latitude)
+        } else if (add_type === 2) {
+            // 管线规划
+            scanListModel.addWpt(longitude, latitude)
+        } else if (add_type === 3) {
+            // 区域规划
+            areaListModel.addWpt(longitude, latitude)
+        }
     }
 
     Connections {
