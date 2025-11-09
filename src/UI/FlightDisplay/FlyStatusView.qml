@@ -27,6 +27,51 @@ import VkSdkInstance 1.0
 
 Item {
       id: _root
+      property bool showFlowView: false
+
+      // 清洗界面弹出窗口
+      Dialog {
+            id: flowViewDialog
+            modal: true
+            closePolicy: Dialog.CloseOnEscape
+            width: 1000 * ScreenTools.scaleWidth
+            height: 700 * ScreenTools.scaleWidth
+            x: (parent.width - width) / 2
+            y: (parent.height - height) / 2
+            
+            background: Rectangle {
+                  color: "#101820"
+                  border.color: "#2EE59D"
+                  border.width: 2
+                  radius: 15 * ScreenTools.scaleWidth
+            }
+
+            contentItem: Rectangle {
+                  color: "transparent"
+                  radius: 15 * ScreenTools.scaleWidth
+                  clip: true
+                  
+                  Loader {
+                        id: flowLoader
+                        anchors.fill: parent
+                        active: true  // 始终保持激活，保留状态
+                        source: "FlowView.qml"
+                        
+                        Connections {
+                              target: flowLoader.item
+                              function onCloseRequested() {
+                                    flowViewDialog.close()
+                              }
+                              
+                              function onLowWaterLevelAlert() {
+                                    // 收到低液位警报信号，自动打开对话框
+                                    console.log("📢 FlyStatusView 收到低液位警报，打开清洗界面对话框")
+                                    flowViewDialog.open()
+                              }
+                        }
+                  }
+            }
+      }
 
       //飞行页面右侧主界面按钮
       Column {
@@ -37,6 +82,15 @@ Item {
                   rightMargin: 65 * ScreenTools.scaleWidth
             }
             spacing: 20 * ScreenTools.scaleWidth
+
+            TextButton {
+                      buttonText: qsTr("进入清洗界面")
+                      height: button_height
+                      width: 200 * ScreenTools.scaleWidth
+                      onClicked: {
+                          flowViewDialog.open()
+                      }
+                }
 
             TextButton {
                   buttonText: qsTr("规划任务")
@@ -149,13 +203,12 @@ Item {
                         if (!VkSdkInstance.vehicleManager.activeVehicle) return
                         let activeVehicle = VkSdkInstance.vehicleManager.activeVehicle
                         let gpsFixType = activeVehicle.GNSS1.gpsInputFixType
-                        console.log(gpsFixType)
                         if (gpsFixType > 1) {
                             let gpsLat = activeVehicle.GNSS1.gpsInputLatitude
                             let gpsLon = activeVehicle.GNSS1.gpsInputLongitude
                             mapControl.addWaypointByCoordinate(gpsLon, gpsLat)
                         } else {
-                            console.warn("GPS未定位,无法添加航点")
+                            console.warn(qsTr("GPS未定位,无法添加航点"))
                         }
                   }
             }

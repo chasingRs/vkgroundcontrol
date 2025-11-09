@@ -23,7 +23,6 @@ Popup {
     property int climbMode: VkSdkInstance.vehicleManager.activeVehicle ? 
                            parseInt(VkSdkInstance.vehicleManager.activeVehicle.parameters["WP_FP_ALT_MODE"]) : 0
     property var activeVehicle: VkSdkInstance.vehicleManager.activeVehicle
-    property bool showFlowView: false
 
     // Popup entrance animation
     enter: Transition {
@@ -124,14 +123,6 @@ Popup {
                     }
                 }
 
-                TextButton {
-                      buttonText: qsTr("进入清洗界面")
-                      height: button_height
-                      width: 200 * ScreenTools.scaleWidth
-                      onClicked: {
-                          showFlowView = true
-                      }
-                }
 
                 // Loader {
                 //        id: flowLoader
@@ -157,12 +148,7 @@ Popup {
             //        source: "FlowView.qml"
             //    }
 
-            Connections {
-                target: flowLoader.item
-                function onCloseRequested() {
-                    showFlowView = false
-                }
-            }
+
         }
 
         // Description text
@@ -209,12 +195,6 @@ Popup {
             height: 30 * ScreenTools.scaleWidth
         }
     }
-    Loader {
-           id: flowLoader
-           anchors.fill: parent
-           active: showFlowView          // 按钮控制加载
-           source: "FlowView.qml"
-       }
 
     // Helper functions
     function getDescriptionText() {
