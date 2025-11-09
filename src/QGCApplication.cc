@@ -47,6 +47,8 @@
 #include "GimbalController.h"
 #include "VKMqttClient.h"
 #include <mission_model.h>
+#include "pumpmodel.h"
+#include "tcpclient.h"
 
 #ifdef Q_OS_LINUX
     #ifndef Q_OS_ANDROID
@@ -209,6 +211,15 @@ void QGCApplication::init() {
         setFont(f);
     }
     _initForNormalAppBoot();
+    // === 初始化自定义 TCP 客户端与泵数据模型 ===
+    // 设置父对象为当前 QGCApplication 实例 (this)
+    auto* pumpModel = new PumpModel(this);
+    auto* tcpClient = new MyTcpClient(pumpModel, this);
+
+    if (_qmlAppEngine) {
+        _qmlAppEngine->rootContext()->setContextProperty("PumpModel", pumpModel);
+        _qmlAppEngine->rootContext()->setContextProperty("MyTcpClient", tcpClient);
+    }
 }
 
 void QGCApplication::_initForNormalAppBoot() {

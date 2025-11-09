@@ -30,6 +30,8 @@ Item {
     property string factoryVerManager: ""
     property bool linkSelect: false
     property int moduleType: HomePage.ModuleType.None
+    property double sw: ScreenTools.scaleWidth
+    property double sh: ScreenTools.scaleHeight
     property real fontSize: 30 * sw
     property var _activeVehicle: VkSdkInstance.vehicleManager.activeVehicle
     property var userInfo: VkSdkInstance.vkServerController.userInfo
@@ -49,7 +51,8 @@ Item {
 
         Image {
             anchors.fill: parent
-            source: "/qmlimages/icon/background.jpg"
+            source: "qrc:/qmlimages/icon/background_Photovoltaics"
+                /*"/qmlimages/icon/background.jpg"*/
         }
 
         TextButton {

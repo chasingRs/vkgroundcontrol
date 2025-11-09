@@ -6,6 +6,7 @@ import VKGroundControl
 import ScreenTools
 import VkSdkInstance 1.0
 
+//最上面一行状态显示
 Item {
     id: _root
     property double satellites_num: 0

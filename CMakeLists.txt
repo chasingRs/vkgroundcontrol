@@ -19,8 +19,8 @@ set(CMAKE_POLICY_VERSION_MINIMUM 3.15)
 #######################################################
 
 add_definitions(
-    -DVK_USER_ID=""
-    -DVK_SDK_LICENSE=""
+    -DVK_USER_ID="9b9cc5ca3a8de677c12ff6509fca4e36"
+    -DVK_SDK_LICENSE="qX8wPMTrQFpJPcRT/fZe39InTHrVpD31XVd/mhalr8W+8IBD9HU+WOcHInp5ehPMUGcKRADiUUZXRMC9WXWPig=="
 )
 
 include(CustomOptions)
@@ -144,7 +144,6 @@ find_package(Qt6
         # Charts
         Concurrent
         Core
-        Core5Compat
         Gui
         LinguistTools
         Location
@@ -172,6 +171,7 @@ find_package(Qt6
 
 if(LINUX)
     find_package(Qt6 COMPONENTS WaylandClient)
+    find_package(Qt6 REQUIRED COMPONENTS Core)
 endif()
 
 # Set extra standard project setup options for Qt 6.7.0 and above
@@ -245,10 +245,12 @@ endif()
 qt_add_executable(${CMAKE_PROJECT_NAME}
     WIN32
     ${QGC_RESOURCES}
+    src/pumpmodel.h src/pumpmodel.cpp
+    src/tcpclient.h src/tcpclient.cpp
 )
 
+target_link_libraries(VKGroundControl PRIVATE Qt6::Core)
 if(WIN32)
-
     message(STATUS "WIN32")
 
     # windows installer files shared with core and custom
@@ -505,16 +507,6 @@ set_target_properties(${CMAKE_PROJECT_NAME}
     PROPERTIES
         QT_RESOURCE_PREFIX "/qgc"
         OUTPUT_NAME ${CMAKE_PROJECT_NAME}
-)
-
-# 收集vkqtsdk头文件以便在IDE中可见
-file(GLOB VKQTSDK_HEADERS "${CMAKE_CURRENT_SOURCE_DIR}/vkqtsdk/include/*.h")
-target_sources(${CMAKE_PROJECT_NAME} PRIVATE ${VKQTSDK_HEADERS})
-# 为这些头文件设置属性，跳过AUTOMOC处理
-set_source_files_properties(${VKQTSDK_HEADERS}
-    PROPERTIES
-        SKIP_AUTOMOC ON
-        HEADER_FILE_ONLY ON
 )
 
 # 添加vkqtsdk头文件目录

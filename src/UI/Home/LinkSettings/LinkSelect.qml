@@ -10,6 +10,9 @@ import FlightMap
 
 Item {
 
+    property double sw: ScreenTools.scaleWidth
+    property double sh: ScreenTools.scaleHeight
+
     signal goToMain
     id: _root
     width: 600 * sw

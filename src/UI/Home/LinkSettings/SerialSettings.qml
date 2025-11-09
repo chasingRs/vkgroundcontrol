@@ -39,7 +39,7 @@ Column {
             enabled: VkSdkInstance.availableSerialPorts().length > 0
 
             onActivated: {
-                if (index != -1) {
+                if (index !== -1) {
                     var list = VkSdkInstance.availableSerialPorts()
                     if (index >= list.length) {
                         // This item was adding at the end, must use added text as name
@@ -92,9 +92,9 @@ Column {
             font.pixelSize: 45 * sh
             id: baudCombo
             model: [57600, 115200, 230400, 460800]
-            onActivated: {
-                if (index != -1) {
-                    subEditConfig.baudrate = baudCombo.currentValue
+            onActivated: function(index) {   // 显式声明参数
+                if (index !== -1) {
+                    // ...
                 }
             }
 

@@ -143,6 +143,54 @@ Flickable {
             }
         }
 
+        // 应用模式
+        SettingSection {
+            width: parent.width
+            content: Column {
+                width: parent.width
+                spacing: 30 * ScreenTools.scaleWidth
+
+                SettingRow {
+                    labelText: qsTr("应用模式")
+                    id:modeSelect
+                    property int startUploadIndex: 1
+                    content: GroupButton {
+                        width: 320 * ScreenTools.scaleWidth
+                        height: 50 * ScreenTools.scaleWidth
+                        anchors.right: parent.right
+                        spacing: 2 * ScreenTools.scaleWidth
+                        selectedIndex: modeSelect.startUploadIndex
+                        names: ["清洗模式","巡查模式"]
+                        onClicked: function(index) {
+                            modeSelect.startUploadIndex = index
+                            if(index === 0) {
+
+                            } else {
+                                VKGroundControl.mqttClient.stop()
+                            }
+                        }
+                    }
+                }
+
+                // SettingRow {
+                //     labelText: qsTr("定位模式")
+
+                //     content: CustomComboBox {
+                //         width: 320 * ScreenTools.scaleWidth
+                //         height: 50 * ScreenTools.scaleWidth
+                //         anchors.verticalCenter: parent.verticalCenter
+                //         fontSize: buttonFontSize * 5 / 6
+                //         model: [qsTr("普通GPS"), qsTr("北斗")]
+                //         currentIndex: mainWindow.isbeidou === true ? 1 : 0
+                //         onActivated: {
+
+                //             // 处理定位模式设置
+                //         }
+                //     }
+                // }
+            }
+        }
+
         // 飞行设置
         SettingSection {
             width: parent.width

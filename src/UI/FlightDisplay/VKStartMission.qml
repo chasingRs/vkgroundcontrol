@@ -14,14 +14,16 @@ Popup {
     
     // Properties with camelCase naming
     property real buttonFontSize: 30 * ScreenTools.scaleWidth
-    property int popupWidth: 600
-    property int popupHeight: 720
+    property int popupWidth: 600 * ScreenTools.scaleWidth
+    property int popupHeight: 720 * ScreenTools.scaleWidth
     property color backgroundColor: ScreenTools.titleColor
     property int returnMode: 0 // 返航方式
+    property int isclean: 0
     property int missionType: 1 // 航线方式 正序航线和逆序航线
     property int climbMode: VkSdkInstance.vehicleManager.activeVehicle ? 
                            parseInt(VkSdkInstance.vehicleManager.activeVehicle.parameters["WP_FP_ALT_MODE"]) : 0
     property var activeVehicle: VkSdkInstance.vehicleManager.activeVehicle
+    property bool showFlowView: false
 
     // Popup entrance animation
     enter: Transition {
@@ -60,7 +62,7 @@ Popup {
         // Mission configuration section
         Item {
             width: parent.width
-            height: 260 * ScreenTools.scaleWidth
+            height: 400 * ScreenTools.scaleWidth
 
             Column {
                 width: 640 * ScreenTools.scaleWidth
@@ -93,13 +95,72 @@ Popup {
 
                 // Mission completion action selection
                 MissionOptionRow {
-                    //visible: vehicles.count <= 2
+                    // visible: isclean =0
                     labelText: qsTr("完成航线动作")
                     options: [qsTr("悬停"), qsTr("返航"), qsTr("降落")]
                     selectedIndex: returnMode
                     onSelectionChanged: function(index) {
                         returnMode = index
                     }
+                }
+                //清洗界面按钮
+                // MissionOptionRow {
+                //     visible: isclean =1
+                //     labelText: qsTr("清洗开关")
+                //     options: [qsTr("开始清洗"), qsTr("暂停清洗")]
+                //     selectedIndex: returnMode
+                //     onSelectionChanged: function(index) {
+                //         returnMode = index
+                //     }
+                // }
+
+                MissionOptionRow {
+                    visible: isclean =1
+                    labelText: qsTr("清洗模式")
+                    options: [qsTr("手动清洗"), qsTr("自动清洗")]
+                    selectedIndex: returnMode
+                    onSelectionChanged: function(index) {
+                        //returnMode = index
+                    }
+                }
+
+                TextButton {
+                      buttonText: qsTr("进入清洗界面")
+                      height: button_height
+                      width: 200 * ScreenTools.scaleWidth
+                      onClicked: {
+                          showFlowView = true
+                      }
+                }
+
+                // Loader {
+                //        id: flowLoader
+                //        anchors.fill: parent
+                //        active: showFlowView          // 按钮控制加载
+                //        source: "FlowView.qml"
+                //    }
+
+                // MissionOptionRow {
+                //     visible: isclean =1
+                //     labelText: qsTr("完成航线动作")
+                //     options: [qsTr("清洗"),qsTr("悬停"), qsTr("返航"), qsTr("降落")]
+                //     selectedIndex: returnMode
+                //     onSelectionChanged: function(index) {
+                //         returnMode = index
+                //     }
+                // }
+            }
+            // Loader {
+            //        id: flowLoader
+            //        anchors.fill: parent
+            //        active: showFlowView          // 按钮控制加载
+            //        source: "FlowView.qml"
+            //    }
+
+            Connections {
+                target: flowLoader.item
+                function onCloseRequested() {
+                    showFlowView = false
                 }
             }
         }
@@ -148,6 +209,12 @@ Popup {
             height: 30 * ScreenTools.scaleWidth
         }
     }
+    Loader {
+           id: flowLoader
+           anchors.fill: parent
+           active: showFlowView          // 按钮控制加载
+           source: "FlowView.qml"
+       }
 
     // Helper functions
     function getDescriptionText() {

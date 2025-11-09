@@ -133,6 +133,8 @@
         <file alias="Home/LinkSettings/SerialSettings.qml">src/UI/Home/LinkSettings/SerialSettings.qml</file>
         <file alias="Home/LinkSettings/4GSettings.qml">src/UI/Home/LinkSettings/4GSettings.qml</file>
         <file alias="ScreenTools/qmldir">src/UI/ScreenTools/qmldir</file>
+        <file alias="FlightDisplay/FlowView.qml">src/UI/FlightDisplay/FlowView.qml</file>
+        <file alias="FlightDisplay/MissionOptionRow.qml">MissionOptionRow.qml</file>
     </qresource>
     <qresource prefix="/json">
         <file alias="App.SettingsGroup.json">src/Settings/App.SettingsGroup.json</file>

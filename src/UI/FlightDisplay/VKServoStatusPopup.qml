@@ -18,8 +18,8 @@ Item {
         // 公开属性
         property string title: "1"
         property bool isOpen: false
-        property bool enabled: false
-        property bool selected: false
+        property bool enabled: true
+        property bool selected: true
         property color primaryColor: ScreenTools.titleColor
 
         // 信号
@@ -192,7 +192,7 @@ Item {
             visible: isVisible
             width: parent.width
             height: 40 * scaleWidth
-            text: qsTr("舵机状态")
+            text: qsTr("水泵状态")
             font.pixelSize: 25 * scaleWidth
             horizontalAlignment: Text.AlignHCenter
             verticalAlignment: Text.AlignVCenter

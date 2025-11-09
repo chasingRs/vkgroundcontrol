@@ -149,6 +149,7 @@ Item {
                         if (!VkSdkInstance.vehicleManager.activeVehicle) return
                         let activeVehicle = VkSdkInstance.vehicleManager.activeVehicle
                         let gpsFixType = activeVehicle.GNSS1.gpsInputFixType
+                        console.log(gpsFixType)
                         if (gpsFixType > 1) {
                             let gpsLat = activeVehicle.GNSS1.gpsInputLatitude
                             let gpsLon = activeVehicle.GNSS1.gpsInputLongitude

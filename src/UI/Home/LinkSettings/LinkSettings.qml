@@ -25,6 +25,8 @@ Flickable {
     width: parent.width
     height: parent.height
 
+    property double sw: ScreenTools.scaleWidth
+    property double sh: ScreenTools.scaleHeight
     property var _currentSelection: null
     property int _firstColumnWidth: ScreenTools.defaultFontPixelWidth * 12
     property int _secondColumnWidth: ScreenTools.defaultFontPixelWidth * 30
@@ -48,6 +50,41 @@ Flickable {
         property int stopBits: 1
     }
 
+    // Component.onCompleted: {
+    //     console.log("=== Component.onCompleted 开始执行 ===")
+
+    //     if(ScreenTools.isAndroid) {
+    //         console.log("检测到 Android 平台，执行自动连接")
+    //         config.linkType = 2
+    //         config.ip = "127.0.0.1"
+    //         config.port = "9876"
+    //         connect()
+    //         connectRc()
+    //         console.log("Android 自动连接完成，即将 return")
+    //         return
+    //     }
+
+    //     console.log("非 Android 平台，准备调用 openCommSettings")
+    //     openCommSettings(null)
+    // }
+
+    // function openCommSettings(originalLinkConfig) {
+    //     console.log(">>> openCommSettings 函数被调用!")
+    //     console.log("originalLinkConfig 参数:", originalLinkConfig)
+
+    //     loadConfig()
+    //     console.log("loadConfig 完成，config:", JSON.stringify(config))
+
+    //     settingsLoader.editingConfig = config
+    //     console.log("editingConfig 设置完成")
+
+    //     console.log("准备设置 sourceComponent，当前值为:", settingsLoader.sourceComponent)
+    //     console.log("commSettings Component 是否存在:", commSettings ? "是" : "否")
+
+    //     settingsLoader.sourceComponent = commSettings
+    //     console.log("sourceComponent 设置完成，新值为:", settingsLoader.sourceComponent)
+    //     console.log("Loader visible 状态:", settingsLoader.visible)
+    // }
     Component.onCompleted: {
         if(ScreenTools.isAndroid) { //android 自动连接
             config.linkType = 2
@@ -229,12 +266,96 @@ Flickable {
 
     Loader {
         id: settingsLoader
+        // Rectangle {
+        // anchors.fill: parent
+        // color: "red"
+        // visible: parent.visible
+        // }
         width: parent.width
         height: parent.height - buttonRow.height - 8 * sw
         visible: sourceComponent ? true : false
         property var originalLinkConfig: null
         property var editingConfig: null
     }
+
+    // Item {
+    //     id: settingsContainer
+    //     width: parent.width
+    //     height: parent.height - buttonRow.height - 8 * sw
+    //     anchors.top: parent.top
+    //     anchors.left: parent.left
+    //     anchors.right: parent.right
+
+    //     // 直接使用 commSettings 内容
+    //     Rectangle {
+    //         id: settingsRect
+    //         anchors.fill: parent
+    //         color: "black"   // 背景黑色可以马上看到
+    //         ColumnLayout {
+    //             anchors.fill: parent
+    //             anchors.margins: 16 * sw
+    //             spacing: 20 * sh
+
+    //             // -----------------------------
+    //             // 通讯类型选择
+    //             // -----------------------------
+    //             Row {
+    //                 spacing: 20 * sw
+    //                 Label {
+    //                     width: 120 * sw
+    //                     height: 80 * sh
+    //                     text: qsTr("通讯类型")
+    //                     color: "white"
+    //                     verticalAlignment: Text.AlignVCenter
+    //                     font.pixelSize: 60 * sh
+    //                 }
+    //                 ComboBox {
+    //                     width: 400 * sw
+    //                     height: 80 * sh
+    //                     font.pixelSize: 60 * sh
+    //                     model: ["Serial", "TCP", "UDP", "4G"]
+    //                     currentIndex: config.linkType
+    //                     onActivated: (index) => {
+    //                         if (index !== config.linkType) {
+    //                             changeConfigPage(index)
+    //                         }
+    //                     }
+    //                 }
+    //             }
+
+    //             // -----------------------------
+    //             // 测试区域（可以替代内部 Loader）
+    //             // -----------------------------
+    //             Loader {
+    //                 id: linksettingsLoader
+    //                 width: parent.width
+    //                 height: 400 * sh
+    //                 source: config.settingsURL   // 直接用外层的 config
+    //                 asynchronous: false
+    //                 onStatusChanged: {
+    //                     // 调试输出
+    //                     console.log("linksettingsLoader status:", status, "source:", source)
+    //                     if (status === Loader.Error) {
+    //                         console.log("linksettingsLoader error:", errorString())
+    //                     }
+    //                 }
+
+    //                 // 如果加载失败，显示错误提示
+    //                 Rectangle {
+    //                     anchors.fill: parent
+    //                     color: "#440000"
+    //                     visible: linksettingsLoader.status === Loader.Error
+    //                     Text {
+    //                         anchors.centerIn: parent
+    //                         text: "无法加载: " + linksettingsLoader.source
+    //                         color: "white"
+    //                         font.pixelSize: 40 * sh
+    //                     }
+    //                 }
+    //             }
+    //         }
+    //     }
+    // }
 
     //---------------------------------------------
     Component {
