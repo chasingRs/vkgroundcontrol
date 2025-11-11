@@ -36,7 +36,7 @@ Rectangle {
 
     // ================== 调试模式控制 ==================
     // 设置为 false 可以完全禁用所有调试功能
-    readonly property bool debugModeEnabled: true
+    readonly property bool debugModeEnabled: false
     
     // ================== 低液位返航状态管理 ==================
     property bool lowWaterLevelDetected: false          // 是否检测到低液位
@@ -44,8 +44,8 @@ Rectangle {
     property bool isReturningToWork: false              // 是否正在返回工作点
     property bool hasShownLowWaterDialog: false         // 是否已显示低液位对话框(防止重复弹出)
     
-    // 返航点记录
-    property var returnPoint: null                      // 记录返航前的位置点 {latitude, longitude, altitude}
+    // 任务航点保存 - 记录缺水时执行到的航点序号，用于加水后从该航点继续工作
+    property int savedMissionWaypointIndex: -1          // 记录缺水时的航点索引 (-1表示未保存)
     
     // 获取当前飞机位置
     property var activeVehicle: VkSdkInstance.vehicleManager.activeVehicle
@@ -214,22 +214,14 @@ Rectangle {
                         }
                         
                         onClicked: {
-                            // 模拟记录返航点
-                            if (activeVehicle && currentCoordinate) {
-                                returnPoint = {
-                                    latitude: currentCoordinate.latitude,
-                                    longitude: currentCoordinate.longitude,
-                                    altitude: activeVehicle.altitudeRelative ? activeVehicle.altitudeRelative.value : 50.0
-                                }
-                                console.log("📍 模拟返航点:", JSON.stringify(returnPoint))
+                            // 模拟记录当前航点序号
+                            if (activeVehicle && activeVehicle.missionCurrent) {
+                                savedMissionWaypointIndex = activeVehicle.missionCurrent.missionCurrentSeq
+                                console.log("模拟记录航点序号:", savedMissionWaypointIndex)
                             } else {
-                                // 如果没有真实飞机,使用模拟坐标
-                                returnPoint = {
-                                    latitude: 39.9042,
-                                    longitude: 116.4074,
-                                    altitude: 50.0
-                                }
-                                console.log("📍 使用模拟返航点(无飞机连接):", JSON.stringify(returnPoint))
+                                // 如果没有真实飞机,使用模拟航点序号
+                                savedMissionWaypointIndex = 0
+                                console.log("使用模拟航点序号(无飞机连接):", savedMissionWaypointIndex)
                             }
                             
                             // 重置标志以允许弹出对话框
@@ -342,23 +334,6 @@ Rectangle {
             }
         }
 
-        // ================== 连接状态显示 ==================
-        // Rectangle {
-        //     width: parent.width
-        //     height: 40
-        //     radius: 8
-        //     color: statusColor
-        //     opacity: 0.8
-
-        //     Text {
-        //         anchors.centerIn: parent
-        //         text: connectionStatus + (MyTcpClient && MyTcpClient.lastError ? " - " + MyTcpClient.lastError : "")
-        //         color: "white"
-        //         font.pixelSize: 14
-        //         font.bold: true
-        //     }
-        // }
-
         // ================== 数据展示区 ==================
         Rectangle {
             width: parent.width
@@ -453,8 +428,6 @@ Rectangle {
                 property real tankVolume: text ? parseFloat(text) : 0
             }
 
-
-
             // Text {
             //     id: shengyurongliangid
             //     text: "水箱容积:"
@@ -547,9 +520,6 @@ Rectangle {
                 horizontalAlignment: Text.AlignLeft
                 width: parent.width * 0.17
                 anchors.verticalCenter: parent.verticalCenter
-                // anchors.left: send_button.right
-                // anchors.verticalCenter: parent.verticalCenter
-                // anchors.leftMargin: 20
             }
         }
 
@@ -628,25 +598,6 @@ Rectangle {
                 // 设置默认值
                 Component.onCompleted: text = "10000"
             }
-
-            // Rectangle {
-            //     width: 80
-            //     height: 40
-            //     radius: 8
-            //     color: statusColor
-            //     opacity: 0.8
-            //     anchors.left: portField.right
-            //     anchors.verticalCenter: parent.verticalCenter
-            //     anchors.leftMargin: 20
-
-            //     Text {
-            //         anchors.centerIn: parent
-            //         text: connectionStatus + (MyTcpClient && MyTcpClient.lastError ? " - " + MyTcpClient.lastError : "")
-            //         color: "white"
-            //         font.pixelSize: 14
-            //         font.bold: true
-            //     }
-            // }
 
             Button {
                 id: connectButton
@@ -740,38 +691,6 @@ Rectangle {
             }
         }
          }
-
-        // ================== 调试信息显示 ==================
-        // Rectangle {
-        //     width: parent.width
-        //     height: 60
-        //     radius: 8
-        //     color: "#2A3B4A"
-        //     visible: true // 设置为true显示调试信息
-
-        //     Column {
-        //         anchors.centerIn: parent
-        //         spacing: 2
-        //         Text {
-        //             text: "调试信息:"
-        //             color: "#B0BEC5"
-        //             font.pixelSize: 12
-        //             font.bold: true
-        //         }
-        //         Text {
-        //             text: "连接状态: " + (MyTcpClient ?
-        //                  (MyTcpClient.connected ? "已连接" :
-        //                   (MyTcpClient.connecting ? "连接中" : "未连接")) : "未初始化")
-        //             color: "#B0BEC5"
-        //             font.pixelSize: 10
-        //         }
-        //         Text {
-        //             text: "最后错误: " + (MyTcpClient ? MyTcpClient.lastError : "无")
-        //             color: "#B0BEC5"
-        //             font.pixelSize: 10
-        //         }
-        //     }
-        // }
     }
 
     // ================== 手动信号连接和定时更新 ==================
@@ -801,19 +720,18 @@ Rectangle {
                            shuixiangshengyuid.text = "剩余容积: " + remainingVolume.toFixed(2) + " L"
 
                 // ================== 低液位检测与返航逻辑 ==================
-                if (waterField.tankVolume > 0 && remainingVolume <= 1) {
+                if (waterField.tankVolume > 0 && totalVolume > 0 && remainingVolume <= 1) {
                     if (!lowWaterLevelDetected) {
                         // 首次检测到低液位
                         lowWaterLevelDetected = true
                         
-                        // 记录当前位置作为返航点
-                        if (activeVehicle && currentCoordinate) {
-                            returnPoint = {
-                                latitude: currentCoordinate.latitude,
-                                longitude: currentCoordinate.longitude,
-                                altitude: activeVehicle.altitudeRelative.value || 0
-                            }
-                            console.log("🔖 记录返航点:", JSON.stringify(returnPoint))
+                        // 记录当前执行的航点序号和任务模式
+                        if (activeVehicle && activeVehicle.missionCurrent) {
+                            savedMissionWaypointIndex = activeVehicle.missionCurrent.missionCurrentSeq
+                            console.log("🔖 记录当前航点序号:", savedMissionWaypointIndex)
+                        } else {
+                            savedMissionWaypointIndex = -1
+                            console.warn("⚠️ 无法获取当前任务信息，航点序号记录失败")
                         }
                         
                         // 只在首次检测到低液位时自动弹出对话框
@@ -953,32 +871,14 @@ Rectangle {
             Row {
                 spacing: 10 * ScreenTools.scaleWidth
                 Text {
-                    text: "返航点记录:"
+                    text: "航点索引:"
                     font.pixelSize: 12 * ScreenTools.scaleWidth
                     color: "#B0BEC5"
                 }
                 Text {
-                    text: returnPoint ? "✓ 已记录" : "○ 未记录"
+                    text: savedMissionWaypointIndex >= 0 ? ("✓ " + savedMissionWaypointIndex) : "○ 未记录"
                     font.pixelSize: 12 * ScreenTools.scaleWidth
-                    color: returnPoint ? "#2EE59D" : "#666666"
-                }
-            }
-            
-            Row {
-                visible: returnPoint !== null
-                spacing: 5 * ScreenTools.scaleWidth
-                width: parent.width
-                Text {
-                    text: "坐标:"
-                    font.pixelSize: 11 * ScreenTools.scaleWidth
-                    color: "#90A4AE"
-                }
-                Text {
-                    text: returnPoint ? returnPoint.latitude.toFixed(4) + ", " + returnPoint.longitude.toFixed(4) : ""
-                    font.pixelSize: 11 * ScreenTools.scaleWidth
-                    color: "#CFD8DC"
-                    elide: Text.ElideRight
-                    width: parent.width - 40 * ScreenTools.scaleWidth
+                    color: savedMissionWaypointIndex >= 0 ? "#2EE59D" : "#666666"
                 }
             }
             
@@ -1013,7 +913,8 @@ Rectangle {
                         lowWaterLevelDetected = false
                         hasShownLowWaterDialog = false
                         isReturningForRefill = false
-                        returnPoint = null
+                        isReturningToWork = false
+                        savedMissionWaypointIndex = -1
                         lowWaterDialog.close()
                         returnStatusNotification.close()
                     }
@@ -1040,12 +941,8 @@ Rectangle {
                     
                     onClicked: {
                         isReturningForRefill = true
-                        if (!returnPoint) {
-                            returnPoint = {
-                                latitude: 39.9042,
-                                longitude: 116.4074,
-                                altitude: 50.0
-                            }
+                        if (savedMissionWaypointIndex < 0) {
+                            savedMissionWaypointIndex = 0  // 模拟第一个航点
                         }
                         returnStatusNotification.open()
                     }
@@ -1124,44 +1021,37 @@ Rectangle {
                 }
             }
             
-            // 返航点信息
+            // 航点信息 - 显示保存的航点序号
             Rectangle {
                 width: parent.width - 40 * ScreenTools.scaleWidth
-                height: returnPointInfo.height + 30 * ScreenTools.scaleWidth
+                height: waypointInfo.height + 30 * ScreenTools.scaleWidth
                 color: "#2A3B4A"
                 radius: 8
                 border.color: "#2EE59D"
                 border.width: 1
                 
                 Column {
-                    id: returnPointInfo
+                    id: waypointInfo
                     anchors.centerIn: parent
                     spacing: 8 * ScreenTools.scaleWidth
                     
                     Text {
-                        text: "📍 已记录当前位置为返航点"
+                        text: savedMissionWaypointIndex >= 0 ? "📍 已记录当前航点序号" : "📍 航点序号未记录"
                         font.pixelSize: 16 * ScreenTools.scaleWidth
                         font.bold: true
                         color: "#2EE59D"
                     }
                     
                     Text {
-                        visible: returnPoint !== null
-                        text: returnPoint ? "纬度: " + returnPoint.latitude.toFixed(7) : ""
+                        visible: savedMissionWaypointIndex >= 0
+                        text: savedMissionWaypointIndex >= 0 ? "航点索引: " + savedMissionWaypointIndex : ""
                         font.pixelSize: 13 * ScreenTools.scaleWidth
                         color: "#B0BEC5"
                     }
                     
                     Text {
-                        visible: returnPoint !== null
-                        text: returnPoint ? "经度: " + returnPoint.longitude.toFixed(7) : ""
-                        font.pixelSize: 13 * ScreenTools.scaleWidth
-                        color: "#B0BEC5"
-                    }
-                    
-                    Text {
-                        visible: returnPoint !== null
-                        text: returnPoint ? "高度: " + returnPoint.altitude.toFixed(1) + " m" : ""
+                        visible: activeVehicle && activeVehicle.missionCurrent && savedMissionWaypointIndex >= 0
+                        text: (activeVehicle && activeVehicle.missionCurrent) ? ("总航点数: " + activeVehicle.missionCurrent.missionTotalItems) : ""
                         font.pixelSize: 13 * ScreenTools.scaleWidth
                         color: "#B0BEC5"
                     }
@@ -1343,7 +1233,7 @@ Rectangle {
                     height: 45 * ScreenTools.scaleWidth
                     font.pixelSize: 15 * ScreenTools.scaleWidth
                     font.bold: true
-                    enabled: returnPoint !== null
+                    enabled: savedMissionWaypointIndex >= 0
                     
                     background: Rectangle {
                         radius: 8 * ScreenTools.scaleWidth
@@ -1361,7 +1251,7 @@ Rectangle {
                     }
                     
                     onClicked: {
-                        if (returnPoint) {
+                        if (savedMissionWaypointIndex >= 0) {
                             console.log("✈️ 点击返回工作点按钮 - 打开二次确认")
                             returnToWorkConfirmDialog.open()
                         }
@@ -1400,7 +1290,7 @@ Rectangle {
                         isReturningForRefill = false
                         lowWaterLevelDetected = false
                         hasShownLowWaterDialog = false
-                        returnPoint = null
+                        savedMissionWaypointIndex = -1  // 重置保存的航点索引
                         
                         // 关闭对话框
                         returnStatusNotification.close()
@@ -1489,29 +1379,15 @@ Rectangle {
                     spacing: 5 * ScreenTools.scaleWidth
                     
                     Text {
-                        text: "📍 目标工作点坐标:"
+                        visible: savedMissionWaypointIndex >= 0
+                        text: savedMissionWaypointIndex >= 0 ? "工作航点序号: " + savedMissionWaypointIndex : "航点索引未保存"
                         font.pixelSize: 14 * ScreenTools.scaleWidth
                         color: "#00E5FF"
-                        font.bold: true
                     }
                     
                     Text {
-                        visible: returnPoint !== null
-                        text: returnPoint ? "纬度: " + returnPoint.latitude.toFixed(7) : ""
-                        font.pixelSize: 13 * ScreenTools.scaleWidth
-                        color: "#B0BEC5"
-                    }
-                    
-                    Text {
-                        visible: returnPoint !== null
-                        text: returnPoint ? "经度: " + returnPoint.longitude.toFixed(7) : ""
-                        font.pixelSize: 13 * ScreenTools.scaleWidth
-                        color: "#B0BEC5"
-                    }
-                    
-                    Text {
-                        visible: returnPoint !== null
-                        text: returnPoint ? "高度: " + returnPoint.altitude.toFixed(1) + " m" : ""
+                        visible: activeVehicle && activeVehicle.missionCurrent && savedMissionWaypointIndex >= 0
+                        text: (activeVehicle && activeVehicle.missionCurrent) ? ("任务总航点数: " + activeVehicle.missionCurrent.missionTotalItems) : ""
                         font.pixelSize: 13 * ScreenTools.scaleWidth
                         color: "#B0BEC5"
                     }
@@ -1519,7 +1395,7 @@ Rectangle {
             }
             
             Text {
-                text: "✅ 确认已完成加水,准备返回工作点继续作业"
+                text: "确认已完成加水,准备返回工作点继续作业"
                 font.pixelSize: 14 * ScreenTools.scaleWidth
                 color: "#FFB74D"
                 wrapMode: Text.WordWrap
@@ -1581,34 +1457,29 @@ Rectangle {
                     }
                     
                     onClicked: {
-                        if (returnPoint) {
-                            console.log("🔙 确认返回工作点:", JSON.stringify(returnPoint))
+                        if (savedMissionWaypointIndex >= 0) {
+                            console.log("🔙 确认返回工作点(航点索引):", savedMissionWaypointIndex)
                             
                             // 设置返回工作点状态
                             isReturningToWork = true
                             isReturningForRefill = false  // 清除返航加水状态
                             
-                            // 调用SDK的指点飞行接口,飞往返回点
+                            // 调用SDK的startMission接口，从保存的航点序号继续执行任务
                             if (activeVehicle) {
-                                // flyCurrentPoint(lon, lat, alt, yaw, speed)
-                                // yaw设置为NaN表示朝向目标点,speed设置为NaN使用默认速度
-                                activeVehicle.flyCurrentPoint(
-                                    returnPoint.longitude, 
-                                    returnPoint.latitude, 
-                                    returnPoint.altitude, 
-                                    NaN,  // yaw: 自动朝向目标点
-                                    NaN   // speed: 使用默认巡航速度
-                                )
-                                console.log("✈️ 返回工作点命令已发送")
+                                // startMission(wpid, execMode, doneAct)
+                                // wpid: 起始航点序号 (从保存的航点索引开始)
+                                // execMode: 0=顺序执行, 1=顺序执行但略过动作, 等
+                                // doneAct: 0=悬停, 1=返航, 2=降落, 等
+                                activeVehicle.startMission(savedMissionWaypointIndex, 0, 0)
+                                console.log("✈️ 从航点", savedMissionWaypointIndex, "继续执行任务")
                             } else {
                                 console.log("⚠️ 测试模式: 无飞机连接,仅模拟返回工作点")
                             }
                             
-                            // 关闭确认对话框和状态通知
+                            // 关闭确认对话框
                             returnToWorkConfirmDialog.close()
-                            returnStatusNotification.close()
                         } else {
-                            console.log("❌ 错误: 没有返航点记录")
+                            console.log("❌ 错误: 没有保存的航点索引")
                             returnToWorkConfirmDialog.close()
                         }
                     }
