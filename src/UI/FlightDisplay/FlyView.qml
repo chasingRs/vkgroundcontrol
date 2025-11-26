@@ -48,6 +48,64 @@ Item {
       property var bms_status: _vehicles.bmsStatus
       visible: false
 
+      property var lidar_ob_avoid_dist : _vehicles.parameters["OBAVOID_DIST"]  // 参数中设置的避障距离
+      property var lidar_front_ob_dist : _vehicles.obstacleDistance.distances[0] * 0.01 // 单位m
+      property var lidar_back_ob_dist : _vehicles.obstacleDistance.distances[2] * 0.01
+      property var parsedErrors: []  // 报警信息数组
+
+      // 监听前避障距离变化
+      onLidar_front_ob_distChanged: {
+            updateObstacleAlarms()
+      }
+
+      // 监听后避障距离变化
+      onLidar_back_ob_distChanged: {
+            updateObstacleAlarms()
+      }
+
+      // 监听避障距离参数变化
+      onLidar_ob_avoid_distChanged: {
+            updateObstacleAlarms()
+      }
+
+      // 更新避障雷达报警的函数
+      function updateObstacleAlarms() {
+            var frontAlarmMsg = "前避障雷达报警"
+            var backAlarmMsg = "后避障雷达报警"
+            var frontAlarmIndex = parsedErrors.indexOf(frontAlarmMsg)
+            var backAlarmIndex = parsedErrors.indexOf(backAlarmMsg)
+
+            // 处理前避障雷达报警
+            if((lidar_front_ob_dist <= lidar_ob_avoid_dist) && (lidar_front_ob_dist>0)) {
+                  // 距离过近，添加报警（如果还没有的话）
+                  if(frontAlarmIndex === -1) {
+                        parsedErrors.push(frontAlarmMsg)
+                        parsedErrors = parsedErrors  // 触发数组更新
+                  }
+            } else {
+                  // 距离安全，移除报警
+                  if(frontAlarmIndex !== -1) {
+                        parsedErrors.splice(frontAlarmIndex, 1)
+                        parsedErrors = parsedErrors  // 触发数组更新
+                  }
+            }
+
+            // 处理后避障雷达报警
+            if((lidar_back_ob_dist <= lidar_ob_avoid_dist) && (lidar_back_ob_dist>0)) {
+                  // 距离过近，添加报警（如果还没有的话）
+                  if(backAlarmIndex === -1) {
+                        parsedErrors.push(backAlarmMsg)
+                        parsedErrors = parsedErrors  // 触发数组更新
+                  }
+            } else {
+                  // 距离安全，移除报警
+                  if(backAlarmIndex !== -1) {
+                        parsedErrors.splice(backAlarmIndex, 1)
+                        parsedErrors = parsedErrors  // 触发数组更新
+                  }
+            }
+      }
+
       onBaojingerror1Changed: {
             parsedErrors = parseSysError1(baojingerror1, baojingerror2, baojingerror3)
       }

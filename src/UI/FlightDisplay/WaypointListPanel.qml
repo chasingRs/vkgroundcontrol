@@ -197,7 +197,7 @@ VKFlickable {
                 width: parent.width - 60 * ScreenTools.scaleWidth
                 height: 50 * ScreenTools.scaleWidth
                 anchors.horizontalCenter: parent.horizontalCenter
-                spacing: 10 * ScreenTools.scaleWidth
+                spacing: 200 * ScreenTools.scaleWidth
 
                 TextButton {
                     id: batchSettingsButton
@@ -265,43 +265,43 @@ VKFlickable {
                     }
                 }
 
-                TextButton {
-                    id: saveFileButton
-                    width: (parent.width - 30 * ScreenTools.scaleWidth) / 4
-                    height: 50 * ScreenTools.scaleWidth
-                    buttonText: qsTr("保存")
-                    backgroundColor: "white"
-                    textColor: "black"
-                    fontSize: mainButtonFontSize * 4.5 / 6
-                    cornerRadius: 10 * ScreenTools.scaleWidth
-                    pressedColor: backgroundColor
-                    pressedTextColor: "white"
+                // TextButton {
+                //     id: saveFileButton
+                //     width: (parent.width - 30 * ScreenTools.scaleWidth) / 4
+                //     height: 50 * ScreenTools.scaleWidth
+                //     buttonText: qsTr("保存")
+                //     backgroundColor: "white"
+                //     textColor: "black"
+                //     fontSize: mainButtonFontSize * 4.5 / 6
+                //     cornerRadius: 10 * ScreenTools.scaleWidth
+                //     pressedColor: backgroundColor
+                //     pressedTextColor: "white"
 
-                    onClicked: {
+                //     onClicked: {
 
-                        // TODO: 实现文件保存功能
-                        // fileDialog.open()
-                    }
-                }
+                //         TODO: 实现文件保存功能
+                //         fileDialog.open()
+                //     }
+                // }
 
-                TextButton {
-                    id: openFileButton
-                    width: (parent.width - 30 * ScreenTools.scaleWidth) / 4
-                    height: 50 * ScreenTools.scaleWidth
-                    buttonText: qsTr("打开")
-                    backgroundColor: "white"
-                    textColor: "black"
-                    fontSize: mainButtonFontSize * 4.5 / 6
-                    cornerRadius: 10 * ScreenTools.scaleWidth
-                    pressedColor: backgroundColor
-                    pressedTextColor: "white"
+                // TextButton {
+                //     id: openFileButton
+                //     width: (parent.width - 30 * ScreenTools.scaleWidth) / 4
+                //     height: 50 * ScreenTools.scaleWidth
+                //     buttonText: qsTr("打开")
+                //     backgroundColor: "white"
+                //     textColor: "black"
+                //     fontSize: mainButtonFontSize * 4.5 / 6
+                //     cornerRadius: 10 * ScreenTools.scaleWidth
+                //     pressedColor: backgroundColor
+                //     pressedTextColor: "white"
 
-                    onClicked: {
+                //     onClicked: {
 
-                        // TODO: 实现文件打开功能
-                        // openFileDialog.open()
-                    }
-                }
+                //         TODO: 实现文件打开功能
+                //         openFileDialog.open()
+                //     }
+                // }
             }
         }
     }

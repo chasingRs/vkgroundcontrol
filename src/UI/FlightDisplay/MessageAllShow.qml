@@ -285,6 +285,19 @@ Flickable {
                                                       1))
                             verticalAlignment: Text.AlignVCenter
                         }
+                        Text {
+                            width: width_text
+                            height: height_text
+                            font.pixelSize: fontsize
+                            color: fontcolor
+                            font.bold: false
+                            text: VkSdkInstance.vehicleManager.activeVehicle.distanceSensor.currentDistance
+                                  === 65535 ? qsTr("仿地雷达距离:无") : qsTr(
+                                                  "仿地雷达距离:%1m").arg(
+                                                  (VkSdkInstance.vehicleManager.activeVehicle.distanceSensor.currentDistance).toFixed(
+                                                      1))
+                            verticalAlignment: Text.AlignVCenter
+                        }
                     }
 
                     Item {
@@ -331,16 +344,19 @@ Flickable {
         }
 
         Item {
+            visible: false
             width: parent.width
             height: 30 * ScreenTools.scaleWidth
         }
 
         // 氢能电池信息区域
         Item {
+             visible: false
             width: parent.width
             height: 60 * ScreenTools.scaleWidth
             id:vt_qx_bms
             Text {
+                visible: false
                 width: parent.width
                 height: parent.height
                 anchors.centerIn: parent.Center
@@ -353,11 +369,13 @@ Flickable {
             }
         }
         Item {
+
             id:qx_msg
             width: parent.width
             anchors.horizontalCenter: parent.horizontalCenter
             height: column_battery.height
             Rectangle {
+                visible: false
                 width: parent.width
                 height: parent.height
                 color: "#00000000"
@@ -367,6 +385,7 @@ Flickable {
             }
 
             Column {
+                visible: false
                 width: parent.width
                 id: column_battery
                 spacing: 0
@@ -406,6 +425,7 @@ Flickable {
             }
         }
         Item {
+             visible: false
             width: parent.width
             height: 30 * ScreenTools.scaleWidth
         }

@@ -37,16 +37,16 @@ Rectangle {
     // ================== 调试模式控制 ==================
     // 设置为 false 可以完全禁用所有调试功能
     readonly property bool debugModeEnabled: false
-    
+
     // ================== 低液位返航状态管理 ==================
     property bool lowWaterLevelDetected: false          // 是否检测到低液位
     property bool isReturningForRefill: false           // 是否正在返航加水
     property bool isReturningToWork: false              // 是否正在返回工作点
     property bool hasShownLowWaterDialog: false         // 是否已显示低液位对话框(防止重复弹出)
-    
+
     // 任务航点保存 - 记录缺水时执行到的航点序号，用于加水后从该航点继续工作
     property int savedMissionWaypointIndex: -1          // 记录缺水时的航点索引 (-1表示未保存)
-    
+
     // 获取当前飞机位置
     property var activeVehicle: VkSdkInstance.vehicleManager.activeVehicle
     property var currentCoordinate: activeVehicle ? activeVehicle.coordinate : null
@@ -61,20 +61,20 @@ Rectangle {
         // ================== 标题和按钮布局区域 ==================
         Rectangle {
             width: parent.width
-            height: parent.height * 0.2
+            height: parent.height * 0.15
             color: "transparent"
-            
+
             Row {
                 anchors.fill: parent
                 spacing: 20 * ScreenTools.scaleWidth
-                
+
                 // 左侧按钮组
                 Column {
                     width: (parent.width - 60 * ScreenTools.scaleWidth) / 3
                     height: parent.height
                     spacing: 15 * ScreenTools.scaleWidth
                     anchors.verticalCenter: parent.verticalCenter
-                    
+
                     // 返回按钮
                     Button {
                         id: rtn_btn
@@ -84,14 +84,14 @@ Rectangle {
                         font.pixelSize: 20 * ScreenTools.scaleWidth
                         font.bold: true
                         anchors.horizontalCenter: parent.horizontalCenter
-                        
+
                         background: Rectangle {
                             radius: 10 * ScreenTools.scaleWidth
                             color: parent.pressed ? "#1B5E20" : "#2EE59D"
                             border.color: "#A5D6A7"
                             border.width: 2
                         }
-                        
+
                         contentItem: Text {
                             text: parent.text
                             font: parent.font
@@ -99,10 +99,10 @@ Rectangle {
                             horizontalAlignment: Text.AlignHCenter
                             verticalAlignment: Text.AlignVCenter
                         }
-                        
+
                         onClicked: closeRequested()
                     }
-                    
+
                     // 测试模式开关按钮
                     Button {
                         id: testModeButton
@@ -114,14 +114,14 @@ Rectangle {
                         font.bold: true
                         anchors.horizontalCenter: parent.horizontalCenter
                         property bool testModeSwitch: false
-                        
+
                         background: Rectangle {
                             radius: 10 * ScreenTools.scaleWidth
                             color: testModeButton.testModeSwitch ? "#FF9800" : "#546E7A"
                             border.color: testModeButton.testModeSwitch ? "#FFB74D" : "#78909C"
                             border.width: 2
                         }
-                        
+
                         contentItem: Text {
                             text: parent.text
                             font: parent.font
@@ -129,14 +129,14 @@ Rectangle {
                             horizontalAlignment: Text.AlignHCenter
                             verticalAlignment: Text.AlignVCenter
                         }
-                        
+
                         onClicked: {
                             testModeSwitch = !testModeSwitch
                             console.log("测试模式:", testModeSwitch ? "开启" : "关闭")
                         }
                     }
                 }
-                
+
                 // 中间标题
                 Text {
                     id: header
@@ -149,14 +149,14 @@ Rectangle {
                     horizontalAlignment: Text.AlignHCenter
                     verticalAlignment: Text.AlignVCenter
                 }
-                
+
                 // 右侧按钮组
                 Column {
                     width: (parent.width - 60 * ScreenTools.scaleWidth) / 3
                     height: parent.height
                     spacing: 15 * ScreenTools.scaleWidth
                     anchors.verticalCenter: parent.verticalCenter
-                    
+
                     // 初始化按钮
                     Button {
                         width: parent.width
@@ -165,14 +165,14 @@ Rectangle {
                         font.pixelSize: 20 * ScreenTools.scaleWidth
                         font.bold: true
                         anchors.horizontalCenter: parent.horizontalCenter
-                        
+
                         background: Rectangle {
                             radius: 10 * ScreenTools.scaleWidth
                             color: parent.pressed ? "#00ACC1" : "#00BCD4"
                             border.color: "#80DEEA"
                             border.width: 2
                         }
-                        
+
                         contentItem: Text {
                             text: parent.text
                             font: parent.font
@@ -180,13 +180,13 @@ Rectangle {
                             horizontalAlignment: Text.AlignHCenter
                             verticalAlignment: Text.AlignVCenter
                         }
-                        
+
                         onClicked: {
                             init_pump = 1;
                             MyTcpClient.send_init_pump(init_pump);
                         }
                     }
-                    
+
                     // 模拟低液位按钮
                     Button {
                         visible: debugModeEnabled
@@ -197,14 +197,14 @@ Rectangle {
                         font.bold: true
                         enabled: testModeButton.testModeSwitch
                         anchors.horizontalCenter: parent.horizontalCenter
-                        
+
                         background: Rectangle {
                             radius: 8 * ScreenTools.scaleWidth
                             color: parent.enabled ? (parent.pressed ? "#D84315" : "#FF6B6B") : "#37474F"
                             border.color: parent.enabled ? "#FFCDD2" : "#546E7A"
                             border.width: 2
                         }
-                        
+
                         contentItem: Text {
                             text: parent.text
                             font: parent.font
@@ -212,7 +212,7 @@ Rectangle {
                             horizontalAlignment: Text.AlignHCenter
                             verticalAlignment: Text.AlignVCenter
                         }
-                        
+
                         onClicked: {
                             // 模拟记录当前航点序号
                             if (activeVehicle && activeVehicle.missionCurrent) {
@@ -223,11 +223,11 @@ Rectangle {
                                 savedMissionWaypointIndex = 0
                                 console.log("使用模拟航点序号(无飞机连接):", savedMissionWaypointIndex)
                             }
-                            
+
                             // 重置标志以允许弹出对话框
                             hasShownLowWaterDialog = false
                             lowWaterLevelDetected = true
-                            
+
                             // 直接打开低液位对话框
                             lowWaterDialog.open()
                         }
@@ -245,12 +245,12 @@ Rectangle {
             height: 70 * ScreenTools.scaleWidth
             color: "transparent"
             anchors.horizontalCenter: parent.horizontalCenter
-            
+
             Button {
                 width: 380 * ScreenTools.scaleWidth
                 height: 60 * ScreenTools.scaleWidth
                 anchors.centerIn: parent
-                
+
                 background: Rectangle {
                     radius: 12 * ScreenTools.scaleWidth
                     // 根据状态显示不同颜色
@@ -263,7 +263,7 @@ Rectangle {
                     }
                     border.color: (isReturningForRefill || isReturningToWork) ? "#A5D6A7" : "#FFD600"
                     border.width: 4
-                    
+
                     // 闪烁效果 - 只在未返航时闪烁
                     SequentialAnimation on opacity {
                         running: lowWaterWarningButton.visible && !isReturningForRefill && !isReturningToWork
@@ -271,7 +271,7 @@ Rectangle {
                         NumberAnimation { from: 1.0; to: 0.6; duration: 600 }
                         NumberAnimation { from: 0.6; to: 1.0; duration: 600 }
                     }
-                    
+
                     // 返航中的呼吸效果
                     SequentialAnimation on opacity {
                         running: lowWaterWarningButton.visible && (isReturningForRefill || isReturningToWork)
@@ -280,11 +280,11 @@ Rectangle {
                         NumberAnimation { from: 0.8; to: 1.0; duration: 1000 }
                     }
                 }
-                
+
                 contentItem: Row {
                     spacing: 12 * ScreenTools.scaleWidth
                     anchors.centerIn: parent
-                    
+
                     // 左侧图标
                     Text {
                         text: {
@@ -296,7 +296,7 @@ Rectangle {
                         color: (isReturningForRefill || isReturningToWork) ? "#000000" : "#FFD600"
                         anchors.verticalCenter: parent.verticalCenter
                     }
-                    
+
                     // 中间文本
                     Text {
                         text: {
@@ -309,7 +309,7 @@ Rectangle {
                         color: (isReturningForRefill || isReturningToWork) ? "#000000" : "white"
                         anchors.verticalCenter: parent.verticalCenter
                     }
-                    
+
                     // 右侧图标
                     Text {
                         text: {
@@ -322,7 +322,7 @@ Rectangle {
                         anchors.verticalCenter: parent.verticalCenter
                     }
                 }
-                
+
                 onClicked: {
                     // 根据状态打开不同的对话框
                     if (isReturningForRefill || isReturningToWork) {
@@ -526,7 +526,7 @@ Rectangle {
         // ================== 连接按钮区域 ==================
         Rectangle {
             width: parent.width
-            height: parent.height * 0.15
+            height: parent.height * 0.1
             radius: 10 * ScreenTools.scaleWidth
             color: "#15232D"
             border.color: "#2A3B4A"
@@ -547,7 +547,7 @@ Rectangle {
 
             TextField {
                 id: ipField
-                placeholderText: "192.168.3.128"
+                placeholderText: "192.168.144.108"
                 width: parent.width * 0.23
                 height: parent.height * 0.8
                 font.pixelSize: 18 * ScreenTools.scaleWidth
@@ -562,7 +562,7 @@ Rectangle {
                     border.width: 1 * ScreenTools.scaleWidth
                 }
                 // 设置默认值
-                Component.onCompleted: text = "192.168.3.128"
+                Component.onCompleted: text = "192.168.144.108"
             }
 
             Text {
@@ -596,7 +596,7 @@ Rectangle {
                 }
                 validator: IntValidator { bottom: 1; top: 65535 }
                 // 设置默认值
-                Component.onCompleted: text = "10000"
+                Component.onCompleted: text = "6000"
             }
 
             Button {
@@ -680,7 +680,7 @@ Rectangle {
         MissionOptionRow {
             anchors.left: parent.left
             anchors.verticalCenter: parent.verticalCenter
-            anchors.leftMargin: 20 * ScreenTools.scaleWidth
+            anchors.leftMargin: 100 * ScreenTools.scaleWidth
             // visible: isclean =1
             labelText: qsTr("清洗开关")
             options: [qsTr("开始清洗"), qsTr("暂停清洗")]
@@ -724,7 +724,7 @@ Rectangle {
                     if (!lowWaterLevelDetected) {
                         // 首次检测到低液位
                         lowWaterLevelDetected = true
-                        
+
                         // 记录当前执行的航点序号和任务模式
                         if (activeVehicle && activeVehicle.missionCurrent) {
                             savedMissionWaypointIndex = activeVehicle.missionCurrent.missionCurrentSeq
@@ -733,14 +733,14 @@ Rectangle {
                             savedMissionWaypointIndex = -1
                             console.warn("⚠️ 无法获取当前任务信息，航点序号记录失败")
                         }
-                        
+
                         // 只在首次检测到低液位时自动弹出对话框
                         if (!hasShownLowWaterDialog) {
                             hasShownLowWaterDialog = true
-                            
+
                             // 发出低液位警报信号，通知父组件打开对话框
                             lowWaterLevelAlert()
-                            
+
                             // 打开内部的低液位对话框
                             lowWaterDialog.open()
                         }
@@ -795,13 +795,13 @@ Rectangle {
         border.width: 2
         radius: 8
         z: 1000
-        
+
         Column {
             id: testStatusColumn
             anchors.centerIn: parent
             spacing: 5 * ScreenTools.scaleWidth
             width: parent.width - 20 * ScreenTools.scaleWidth
-            
+
             Text {
                 text: "🧪 测试模式状态"
                 font.pixelSize: 14 * ScreenTools.scaleWidth
@@ -809,9 +809,9 @@ Rectangle {
                 color: "#FF9800"
                 width: parent.width
             }
-            
+
             Rectangle { width: parent.width; height: 1; color: "#455A64" }
-            
+
             Row {
                 spacing: 10 * ScreenTools.scaleWidth
                 Text {
@@ -825,7 +825,7 @@ Rectangle {
                     color: lowWaterLevelDetected ? "#FF6B6B" : "#66BB6A"
                 }
             }
-            
+
             Row {
                 spacing: 10 * ScreenTools.scaleWidth
                 Text {
@@ -839,7 +839,7 @@ Rectangle {
                     color: hasShownLowWaterDialog ? "#2EE59D" : "#666666"
                 }
             }
-            
+
             Row {
                 spacing: 10 * ScreenTools.scaleWidth
                 Text {
@@ -853,7 +853,7 @@ Rectangle {
                     color: isReturningForRefill ? "#00E5FF" : "#666666"
                 }
             }
-            
+
             Row {
                 spacing: 10 * ScreenTools.scaleWidth
                 Text {
@@ -867,7 +867,7 @@ Rectangle {
                     color: lowWaterWarningButton.visible ? "#FFD600" : "#666666"
                 }
             }
-            
+
             Row {
                 spacing: 10 * ScreenTools.scaleWidth
                 Text {
@@ -881,25 +881,25 @@ Rectangle {
                     color: savedMissionWaypointIndex >= 0 ? "#2EE59D" : "#666666"
                 }
             }
-            
+
             Rectangle { width: parent.width; height: 1; color: "#455A64" }
-            
+
             // 快捷操作按钮
             Row {
                 spacing: 5 * ScreenTools.scaleWidth
                 width: parent.width
-                
+
                 Button {
                     text: "重置状态"
                     width: (parent.width - 5 * ScreenTools.scaleWidth) / 2
                     height: 28 * ScreenTools.scaleWidth
                     font.pixelSize: 11 * ScreenTools.scaleWidth
-                    
+
                     background: Rectangle {
                         radius: 4
                         color: parent.pressed ? "#455A64" : "#546E7A"
                     }
-                    
+
                     contentItem: Text {
                         text: parent.text
                         font: parent.font
@@ -907,7 +907,7 @@ Rectangle {
                         horizontalAlignment: Text.AlignHCenter
                         verticalAlignment: Text.AlignVCenter
                     }
-                    
+
                     onClicked: {
                         console.log("🔄 重置测试状态")
                         lowWaterLevelDetected = false
@@ -919,18 +919,18 @@ Rectangle {
                         returnStatusNotification.close()
                     }
                 }
-                
+
                 Button {
                     text: "打开通知"
                     width: (parent.width - 5 * ScreenTools.scaleWidth) / 2
                     height: 28 * ScreenTools.scaleWidth
                     font.pixelSize: 11 * ScreenTools.scaleWidth
-                    
+
                     background: Rectangle {
                         radius: 4
                         color: parent.pressed ? "#00ACC1" : "#00BCD4"
                     }
-                    
+
                     contentItem: Text {
                         text: parent.text
                         font: parent.font
@@ -938,7 +938,7 @@ Rectangle {
                         horizontalAlignment: Text.AlignHCenter
                         verticalAlignment: Text.AlignVCenter
                     }
-                    
+
                     onClicked: {
                         isReturningForRefill = true
                         if (savedMissionWaypointIndex < 0) {
@@ -959,20 +959,20 @@ Rectangle {
         modal: true
         anchors.centerIn: parent
         width: Math.min(parent.width * 0.8, 600 * ScreenTools.scaleWidth)
-        
+
         background: Rectangle {
             color: "#1E2A35"
             border.color: "#FF6B6B"
             border.width: 2
             radius: 10
         }
-        
+
         header: Rectangle {
             width: parent.width
             height: 60 * ScreenTools.scaleWidth
             color: "#FF6B6B"
             radius: 10
-            
+
             Text {
                 anchors.centerIn: parent
                 text: "⚠️ 低液位警告 - 需要返航加水"
@@ -981,11 +981,11 @@ Rectangle {
                 color: "white"
             }
         }
-        
+
         contentItem: Column {
             spacing: 20 * ScreenTools.scaleWidth
             padding: 20 * ScreenTools.scaleWidth
-            
+
             // 警告信息
             Rectangle {
                 width: parent.width - 40 * ScreenTools.scaleWidth
@@ -994,25 +994,25 @@ Rectangle {
                 radius: 8
                 border.color: "#FFA726"
                 border.width: 1
-                
+
                 Column {
                     id: warningText
                     anchors.centerIn: parent
                     spacing: 10 * ScreenTools.scaleWidth
-                    
+
                     Text {
                         text: "🚨 水箱液位过低!"
                         font.pixelSize: 18 * ScreenTools.scaleWidth
                         font.bold: true
                         color: "#FFA726"
                     }
-                    
+
                     Text {
                         text: "剩余容积: " + Math.max(0, waterField.tankVolume - currentTotalVolume).toFixed(2) + " L"
                         font.pixelSize: 16 * ScreenTools.scaleWidth
                         color: "#FF6B6B"
                     }
-                    
+
                     Text {
                         text: "水箱容量: " + waterField.tankVolume.toFixed(2) + " L"
                         font.pixelSize: 14 * ScreenTools.scaleWidth
@@ -1020,7 +1020,7 @@ Rectangle {
                     }
                 }
             }
-            
+
             // 航点信息 - 显示保存的航点序号
             Rectangle {
                 width: parent.width - 40 * ScreenTools.scaleWidth
@@ -1029,26 +1029,26 @@ Rectangle {
                 radius: 8
                 border.color: "#2EE59D"
                 border.width: 1
-                
+
                 Column {
                     id: waypointInfo
                     anchors.centerIn: parent
                     spacing: 8 * ScreenTools.scaleWidth
-                    
+
                     Text {
                         text: savedMissionWaypointIndex >= 0 ? "📍 已记录当前航点序号" : "📍 航点序号未记录"
                         font.pixelSize: 16 * ScreenTools.scaleWidth
                         font.bold: true
                         color: "#2EE59D"
                     }
-                    
+
                     Text {
                         visible: savedMissionWaypointIndex >= 0
                         text: savedMissionWaypointIndex >= 0 ? "航点索引: " + savedMissionWaypointIndex : ""
                         font.pixelSize: 13 * ScreenTools.scaleWidth
                         color: "#B0BEC5"
                     }
-                    
+
                     Text {
                         visible: activeVehicle && activeVehicle.missionCurrent && savedMissionWaypointIndex >= 0
                         text: (activeVehicle && activeVehicle.missionCurrent) ? ("总航点数: " + activeVehicle.missionCurrent.missionTotalItems) : ""
@@ -1057,25 +1057,25 @@ Rectangle {
                     }
                 }
             }
-            
+
             // 返航信息
             Rectangle {
                 width: parent.width - 40 * ScreenTools.scaleWidth
                 height: returnInfo.height + 20 * ScreenTools.scaleWidth
                 color: "#2A3B4A"
                 radius: 8
-                
+
                 Column {
                     id: returnInfo
                     anchors.centerIn: parent
                     spacing: 8 * ScreenTools.scaleWidth
-                    
+
                     Text {
                         text: "🏠 返航模式: 直线返航"
                         font.pixelSize: 14 * ScreenTools.scaleWidth
                         color: "#00E5FF"
                     }
-                    
+
                     Text {
                         text: "📝 返航完成加水后,可返回此位置继续作业"
                         font.pixelSize: 13 * ScreenTools.scaleWidth
@@ -1085,26 +1085,26 @@ Rectangle {
                     }
                 }
             }
-            
+
             // 按钮区域
             Row {
                 spacing: 25 * ScreenTools.scaleWidth
                 anchors.horizontalCenter: parent.horizontalCenter
-                
+
                 Button {
                     text: "❌ 取消返航"
                     width: 180 * ScreenTools.scaleWidth
-                    height: 60 * ScreenTools.scaleWidth 
-                    font.pixelSize: 18 * ScreenTools.scaleWidth 
+                    height: 60 * ScreenTools.scaleWidth
+                    font.pixelSize: 18 * ScreenTools.scaleWidth
                     font.bold: true
-                    
+
                     background: Rectangle {
                         radius: 10 * ScreenTools.scaleWidth
                         color: parent.pressed ? "#D32F2F" : "#FF6B6B"
                         border.color: "#FFCDD2"
-                        border.width: 2 
+                        border.width: 2
                     }
-                    
+
                     contentItem: Text {
                         text: parent.text
                         font: parent.font
@@ -1112,26 +1112,26 @@ Rectangle {
                         horizontalAlignment: Text.AlignHCenter
                         verticalAlignment: Text.AlignVCenter
                     }
-                    
+
                     onClicked: {
                         lowWaterDialog.close()
                     }
                 }
-                
+
                 Button {
                     text: "✅ 确认返航"
-                    width: 180 * ScreenTools.scaleWidth 
-                    height: 60 * ScreenTools.scaleWidth 
-                    font.pixelSize: 18 * ScreenTools.scaleWidth 
+                    width: 180 * ScreenTools.scaleWidth
+                    height: 60 * ScreenTools.scaleWidth
+                    font.pixelSize: 18 * ScreenTools.scaleWidth
                     font.bold: true
-                    
+
                     background: Rectangle {
-                        radius: 10 * ScreenTools.scaleWidth  
+                        radius: 10 * ScreenTools.scaleWidth
                         color: parent.pressed ? "#1B5E20" : "#2EE59D"
                         border.color: "#A5D6A7"
-                        border.width: 2 
+                        border.width: 2
                     }
-                    
+
                     contentItem: Text {
                         text: parent.text
                         font: parent.font
@@ -1139,10 +1139,10 @@ Rectangle {
                         horizontalAlignment: Text.AlignHCenter
                         verticalAlignment: Text.AlignVCenter
                     }
-                    
+
                     onClicked: {
                         isReturningForRefill = true
-                        
+
                         // 执行返航到Home点（通常是起飞点/加水点）
                         if (activeVehicle) {
                             // returnMission(wpid, execMode)
@@ -1151,7 +1151,7 @@ Rectangle {
                             activeVehicle.returnMission(NaN, 0)  // 直线返航到Home点
                             console.log("✈️ 返航命令已发送 - 模式: 直线返航")
                         }
-                        
+
                         lowWaterDialog.close()
                         // 显示返航状态提示
                         returnStatusNotification.open()
@@ -1159,7 +1159,7 @@ Rectangle {
                 }
             }
         }
-        
+
         onClosed: {
             // 对话框关闭时的处理
             if (!isReturningForRefill) {
@@ -1176,27 +1176,27 @@ Rectangle {
         y: 20 * ScreenTools.scaleWidth
         width: 350 * ScreenTools.scaleWidth
         closePolicy: Dialog.NoAutoClose
-        
+
         background: Rectangle {
             color: "#1E2A35"
             border.color: "#2EE59D"
             border.width: 2
             radius: 10
         }
-        
+
         contentItem: Column {
             spacing: 15 * ScreenTools.scaleWidth
             padding: 15 * ScreenTools.scaleWidth
-            
+
             Row {
                 spacing: 10 * ScreenTools.scaleWidth
-                
+
                 Rectangle {
                     width: 10 * ScreenTools.scaleWidth
                     height: 10 * ScreenTools.scaleWidth
                     radius: 5 * ScreenTools.scaleWidth
                     color: "#2EE59D"
-                    
+
                     SequentialAnimation on opacity {
                         running: returnStatusNotification.visible
                         loops: Animation.Infinite
@@ -1204,7 +1204,7 @@ Rectangle {
                         NumberAnimation { from: 0.3; to: 1.0; duration: 800 }
                     }
                 }
-                
+
                 Text {
                     // 根据状态显示不同的文本
                     text: isReturningToWork ? "✈️ 正在返回工作点..." : "🚁 正在返航加水..."
@@ -1213,18 +1213,18 @@ Rectangle {
                     color: "#2EE59D"
                 }
             }
-            
+
             Text {
                 // 根据状态显示不同的提示
                 text: isReturningToWork ? "即将到达工作点,继续作业" : "返航点已记录,加水完成后可返回"
                 font.pixelSize: 13 * ScreenTools.scaleWidth
                 color: "#B0BEC5"
             }
-            
+
             Row {
                 spacing: 12 * ScreenTools.scaleWidth
                 anchors.horizontalCenter: parent.horizontalCenter
-                
+
                 // 只在返航加水时显示"返回工作点"按钮
                 Button {
                     visible: !isReturningToWork  // 返回工作点时隐藏此按钮
@@ -1234,14 +1234,14 @@ Rectangle {
                     font.pixelSize: 15 * ScreenTools.scaleWidth
                     font.bold: true
                     enabled: savedMissionWaypointIndex >= 0
-                    
+
                     background: Rectangle {
                         radius: 8 * ScreenTools.scaleWidth
                         color: parent.enabled ? (parent.pressed ? "#1B5E20" : "#2EE59D") : "#555555"
                         border.width: 2
                         border.color: parent.enabled ? "#A5D6A7" : "#777777"
                     }
-                    
+
                     contentItem: Text {
                         text: parent.text
                         font: parent.font
@@ -1249,7 +1249,7 @@ Rectangle {
                         horizontalAlignment: Text.AlignHCenter
                         verticalAlignment: Text.AlignVCenter
                     }
-                    
+
                     onClicked: {
                         if (savedMissionWaypointIndex >= 0) {
                             console.log("✈️ 点击返回工作点按钮 - 打开二次确认")
@@ -1257,7 +1257,7 @@ Rectangle {
                         }
                     }
                 }
-                
+
                 // 只在返回工作点时显示"已完成"按钮
                 Button {
                     visible: isReturningToWork  // 只在返回工作点时显示
@@ -1266,14 +1266,14 @@ Rectangle {
                     height: 45 * ScreenTools.scaleWidth
                     font.pixelSize: 15 * ScreenTools.scaleWidth
                     font.bold: true
-                    
+
                     background: Rectangle {
                         radius: 8 * ScreenTools.scaleWidth
                         color: parent.pressed ? "#1B5E20" : "#2EE59D"
                         border.width: 2
                         border.color: "#A5D6A7"
                     }
-                    
+
                     contentItem: Text {
                         text: parent.text
                         font: parent.font
@@ -1281,24 +1281,24 @@ Rectangle {
                         horizontalAlignment: Text.AlignHCenter
                         verticalAlignment: Text.AlignVCenter
                     }
-                    
+
                     onClicked: {
                         console.log("✅ 用户确认已完成返回工作点任务")
-                        
+
                         // 重置所有状态
                         isReturningToWork = false
                         isReturningForRefill = false
                         lowWaterLevelDetected = false
                         hasShownLowWaterDialog = false
                         savedMissionWaypointIndex = -1  // 重置保存的航点索引
-                        
+
                         // 关闭对话框
                         returnStatusNotification.close()
-                        
+
                         console.log("🎉 任务完成，所有状态已重置")
                     }
                 }
-                
+
                 // 关闭按钮 - 始终显示，不打断返航
                 Button {
                     text: "关闭"
@@ -1306,14 +1306,14 @@ Rectangle {
                     height: 45 * ScreenTools.scaleWidth
                     font.pixelSize: 15 * ScreenTools.scaleWidth
                     font.bold: true
-                    
+
                     background: Rectangle {
                         radius: 8 * ScreenTools.scaleWidth
                         color: parent.pressed ? "#424242" : "#666666"
                         border.width: 2
                         border.color: "#999999"
                     }
-                    
+
                     contentItem: Text {
                         text: parent.text
                         font: parent.font
@@ -1321,7 +1321,7 @@ Rectangle {
                         horizontalAlignment: Text.AlignHCenter
                         verticalAlignment: Text.AlignVCenter
                     }
-                    
+
                     onClicked: {
                         console.log("ℹ️ 关闭返航状态通知（返航继续进行）")
                         returnStatusNotification.close()
@@ -1330,7 +1330,7 @@ Rectangle {
             }
         }
     }
-    
+
     // ================== 返回工作点二次确认对话框 ==================
     Dialog {
         id: returnToWorkConfirmDialog
@@ -1340,18 +1340,18 @@ Rectangle {
         y: (parent.height - height) / 2
         width: 420 * ScreenTools.scaleWidth
         closePolicy: Dialog.CloseOnEscape
-        
+
         background: Rectangle {
             color: "#1E2A35"
             border.color: "#2EE59D"
             border.width: 2
             radius: 10
         }
-        
+
         contentItem: Column {
             spacing: 20 * ScreenTools.scaleWidth
             padding: 20 * ScreenTools.scaleWidth
-            
+
             Text {
                 text: "✈️ 确认返回工作点"
                 font.pixelSize: 18 * ScreenTools.scaleWidth
@@ -1359,32 +1359,32 @@ Rectangle {
                 color: "#2EE59D"
                 anchors.horizontalCenter: parent.horizontalCenter
             }
-            
+
             Rectangle {
                 width: parent.width - 40 * ScreenTools.scaleWidth
                 height: 1
                 color: "#2A3B4A"
             }
-            
+
             // 工作点坐标信息
             Rectangle {
                 width: parent.width - 40 * ScreenTools.scaleWidth
                 height: workPointInfo.height + 20 * ScreenTools.scaleWidth
                 color: "#2A3B4A"
                 radius: 8
-                
+
                 Column {
                     id: workPointInfo
                     anchors.centerIn: parent
                     spacing: 5 * ScreenTools.scaleWidth
-                    
+
                     Text {
                         visible: savedMissionWaypointIndex >= 0
                         text: savedMissionWaypointIndex >= 0 ? "工作航点序号: " + savedMissionWaypointIndex : "航点索引未保存"
                         font.pixelSize: 14 * ScreenTools.scaleWidth
                         color: "#00E5FF"
                     }
-                    
+
                     Text {
                         visible: activeVehicle && activeVehicle.missionCurrent && savedMissionWaypointIndex >= 0
                         text: (activeVehicle && activeVehicle.missionCurrent) ? ("任务总航点数: " + activeVehicle.missionCurrent.missionTotalItems) : ""
@@ -1393,7 +1393,7 @@ Rectangle {
                     }
                 }
             }
-            
+
             Text {
                 text: "确认已完成加水,准备返回工作点继续作业"
                 font.pixelSize: 14 * ScreenTools.scaleWidth
@@ -1401,25 +1401,25 @@ Rectangle {
                 wrapMode: Text.WordWrap
                 width: parent.width - 40 * ScreenTools.scaleWidth
             }
-            
+
             Row {
                 spacing: 20 * ScreenTools.scaleWidth
                 anchors.horizontalCenter: parent.horizontalCenter
-                
+
                 Button {
                     text: "取消"
-                    width: 140 * ScreenTools.scaleWidth 
-                    height: 55 * ScreenTools.scaleWidth 
-                    font.pixelSize: 17 * ScreenTools.scaleWidth 
+                    width: 140 * ScreenTools.scaleWidth
+                    height: 55 * ScreenTools.scaleWidth
+                    font.pixelSize: 17 * ScreenTools.scaleWidth
                     font.bold: true
-                    
+
                     background: Rectangle {
-                        radius: 10 * ScreenTools.scaleWidth 
+                        radius: 10 * ScreenTools.scaleWidth
                         color: parent.pressed ? "#424242" : "#666666"
                         border.color: "#999999"
-                        border.width: 2 
+                        border.width: 2
                     }
-                    
+
                     contentItem: Text {
                         text: parent.text
                         font: parent.font
@@ -1427,27 +1427,27 @@ Rectangle {
                         horizontalAlignment: Text.AlignHCenter
                         verticalAlignment: Text.AlignVCenter
                     }
-                    
+
                     onClicked: {
                         console.log("❌ 取消返回工作点")
                         returnToWorkConfirmDialog.close()
                     }
                 }
-                
+
                 Button {
                     text: "✅ 确认返回"
-                    width: 160 * ScreenTools.scaleWidth  
-                    height: 55 * ScreenTools.scaleWidth  
-                    font.pixelSize: 17 * ScreenTools.scaleWidth 
+                    width: 160 * ScreenTools.scaleWidth
+                    height: 55 * ScreenTools.scaleWidth
+                    font.pixelSize: 17 * ScreenTools.scaleWidth
                     font.bold: true
-                    
+
                     background: Rectangle {
-                        radius: 10 * ScreenTools.scaleWidth 
+                        radius: 10 * ScreenTools.scaleWidth
                         color: parent.pressed ? "#1B5E20" : "#2EE59D"
                         border.color: "#A5D6A7"
-                        border.width: 2 
+                        border.width: 2
                     }
-                    
+
                     contentItem: Text {
                         text: parent.text
                         font: parent.font
@@ -1455,15 +1455,15 @@ Rectangle {
                         horizontalAlignment: Text.AlignHCenter
                         verticalAlignment: Text.AlignVCenter
                     }
-                    
+
                     onClicked: {
                         if (savedMissionWaypointIndex >= 0) {
                             console.log("🔙 确认返回工作点(航点索引):", savedMissionWaypointIndex)
-                            
+
                             // 设置返回工作点状态
                             isReturningToWork = true
                             isReturningForRefill = false  // 清除返航加水状态
-                            
+
                             // 调用SDK的startMission接口，从保存的航点序号继续执行任务
                             if (activeVehicle) {
                                 // startMission(wpid, execMode, doneAct)
@@ -1475,7 +1475,7 @@ Rectangle {
                             } else {
                                 console.log("⚠️ 测试模式: 无飞机连接,仅模拟返回工作点")
                             }
-                            
+
                             // 关闭确认对话框
                             returnToWorkConfirmDialog.close()
                         } else {

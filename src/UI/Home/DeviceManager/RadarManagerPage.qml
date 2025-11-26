@@ -2,6 +2,7 @@
 import QtQuick.Controls
 
 import VKGroundControl
+import VkSdkInstance 1.0
 import Controls
 import VKGroundControl.Palette
 
@@ -30,6 +31,7 @@ Flickable {
     property bool isFrontRadar: false
     property bool isRearRadar: false
     property bool isTerrainRadar: false
+
 
     // Layout Properties
     height: parent.height
@@ -368,7 +370,12 @@ Flickable {
                                     height: 40 * sw
                                     anchors.verticalCenter: parent.verticalCenter
                                     verticalAlignment: Text.AlignVCenter
-                                    text: activeVehicle ? (activeVehicle.bizhang_dis[0] === 65535 ? qsTr("无效") : (activeVehicle.bizhang_dis[0] * 0.01).toFixed(1) + "m") : ""
+                                    text: VkSdkInstance.vehicleManager.activeVehicle.obstacleDistance.distances[0]
+                                          === 65535 ? qsTr("无") : qsTr(
+                                                          "%1m").arg(
+                                                          (VkSdkInstance.vehicleManager.activeVehicle.obstacleDistance.distances[0] * 0.01).toFixed(
+                                                              1))
+                                    // text: activeVehicle ? (activeVehicle.bizhang_dis[0] === 65535 ? qsTr("无效") : (activeVehicle.bizhang_dis[0] * 0.01).toFixed(1) + "m") : ""
                                     color: "gray"
                                     font.pixelSize: buttonFontSize
                                     font.bold: false
@@ -403,7 +410,12 @@ Flickable {
                                     height: 40 * sw
                                     anchors.verticalCenter: parent.verticalCenter
                                     verticalAlignment: Text.AlignVCenter
-                                    text: activeVehicle ? (activeVehicle.bizhang_dis[2] === 65535 ? qsTr("无效") : (activeVehicle.bizhang_dis[2] * 0.01).toFixed(1) + "m") : ""
+                                    text: VkSdkInstance.vehicleManager.activeVehicle.obstacleDistance.distances[2]
+                                          === 65535 ? qsTr("无") : qsTr(
+                                                          "%1m").arg(
+                                                          (VkSdkInstance.vehicleManager.activeVehicle.obstacleDistance.distances[2] * 0.01).toFixed(
+                                                              1))
+                                    // text: activeVehicle ? (activeVehicle.bizhang_dis[2] === 65535 ? qsTr("无效") : (activeVehicle.bizhang_dis[2] * 0.01).toFixed(1) + "m") : ""
                                     color: "gray"
                                     font.pixelSize: buttonFontSize
                                     font.bold: false
@@ -438,7 +450,12 @@ Flickable {
                                     height: 40 * sw
                                     anchors.verticalCenter: parent.verticalCenter
                                     verticalAlignment: Text.AlignVCenter
-                                    text: activeVehicle ? (activeVehicle.current_dis.toFixed(1) + "m") : ""
+                                    text: VkSdkInstance.vehicleManager.activeVehicle.distanceSensor.currentDistance
+                                          === 65535 ? qsTr("无") : qsTr(
+                                                          "%1m").arg(
+                                                          (VkSdkInstance.vehicleManager.activeVehicle.distanceSensor.currentDistance).toFixed(
+                                                              1))
+                                    // text: activeVehicle ? (activeVehicle.current_dis.toFixed(1) + "m") : ""
                                     color: "gray"
                                     font.pixelSize: buttonFontSize
                                     font.bold: false

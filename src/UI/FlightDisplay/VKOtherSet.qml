@@ -5,6 +5,7 @@ import QtQuick.Layouts
 import VKGroundControl
 import Controls
 import ScreenTools
+import "qrc:/qml/FlightDisplay" as Shared
 
 Flickable {
     id: root
@@ -143,6 +144,8 @@ Flickable {
             }
         }
 
+
+
         // 应用模式
         SettingSection {
             width: parent.width
@@ -153,7 +156,7 @@ Flickable {
                 SettingRow {
                     labelText: qsTr("应用模式")
                     id:modeSelect
-                    property int startUploadIndex: 1
+                    property int startUploadIndex: 0
                     content: GroupButton {
                         width: 320 * ScreenTools.scaleWidth
                         height: 50 * ScreenTools.scaleWidth
@@ -163,11 +166,8 @@ Flickable {
                         names: ["清洗模式","巡查模式"]
                         onClicked: function(index) {
                             modeSelect.startUploadIndex = index
-                            if(index === 0) {
-
-                            } else {
-                                VKGroundControl.mqttClient.stop()
-                            }
+                                    // 同步全局模式状态
+                                     Shared.AppState.appMode = index
                         }
                     }
                 }
@@ -232,6 +232,7 @@ Flickable {
                 }
             }
         }
+
 
         // 系统设置
         SettingSection {

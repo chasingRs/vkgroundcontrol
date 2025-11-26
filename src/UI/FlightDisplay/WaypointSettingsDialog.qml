@@ -2,10 +2,12 @@
 import QtQuick.Controls
 import Qt5Compat.GraphicalEffects
 
+import VkSdkInstance 1.0
 import VKGroundControl
 import ScreenTools
 import FlightDisplay
 import Controls
+import "qrc:/qml/FlightDisplay" as Shared
 
 CustomPopup {
 
@@ -48,6 +50,8 @@ CustomPopup {
     property int dropMode: 0
     property int turnMode: 1
     property int missionMode: 0
+    // property var clearModes: []
+    property int clearMode: 0
     property int photoMode: 0
     property int gimbalType: 0
     property real gimbalHeight: 0
@@ -61,6 +65,44 @@ CustomPopup {
     property bool gimbalDirection6: false
     property bool gimbalDirection7: false
     property bool gimbalDirection8: false
+
+    property var activeVehicle: VkSdkInstance.vehicleManager.activeVehicle
+    property int savedMissionWaypointIndex: -1
+    property int lastMissionWaypointIndex: -1
+
+
+
+    Timer {
+           id: positionMonitorTimer
+           interval: 1000 // 1秒更新一次
+           running: true
+           repeat: true
+           onTriggered: {
+               checkArrivalStatus()
+           }
+       }
+
+    function checkArrivalStatus() {
+        if (activeVehicle && activeVehicle.missionCurrent) {
+                    savedMissionWaypointIndex = activeVehicle.missionCurrent.missionCurrentSeq
+                    // console.log("🔖 记录当前航点序号:", savedMissionWaypointIndex)
+                } else {
+                    savedMissionWaypointIndex = -1
+                    // console.warn("⚠️ 无法获取当前任务信息，航点序号记录失败")
+                }
+        if(savedMissionWaypointIndex !== lastMissionWaypointIndex)
+        {
+        if(Shared.AppState.clearModes[savedMissionWaypointIndex]===0)
+        {
+            MyTcpClient.send_isopen_pump(1);//关闭水泵
+        }
+        if(Shared.AppState.clearModes[savedMissionWaypointIndex]===1)
+        {
+            MyTcpClient.send_isopen_pump(0);//开启水泵
+        }
+        }
+        lastMissionWaypointIndex = savedMissionWaypointIndex;
+        }
 
     // 可复用组件：简单文本输入行
     component SimpleInputRow: Row {
@@ -249,6 +291,18 @@ CustomPopup {
             }
         }
 
+        SelectionGroup {
+            id: clearModeGroup
+            labelText: qsTr("水泵开关")
+            buttonNames: [qsTr("开启"), qsTr("关闭")]
+            selectedIndex: Shared.AppState.clearModes[waypointId] === 0 ? 0 : 1
+
+            groupButton.onClicked: function (index) {
+                Shared.AppState.clearModes[waypointId] = index === 0 ? 0 : 1
+                Shared.AppState.clearModes = Shared.AppState.clearModes
+            }
+        }
+
         // 拍照方式选择（仅在拍照模式下显示）
         SelectionGroup {
             id: photoModeGroup
@@ -337,6 +391,14 @@ CustomPopup {
                                             0, // 环绕模式类型
                                             0, 0, 0 // 0拍照航点 1抛投航点 2环绕模式
                                             )
+
+                                for (var i = 0; i < Shared.AppState.clearModes.length; i++) {
+                                    Shared.AppState.clearModes[i] = Shared.AppState.clearModes[waypointId]
+                                }
+
+                                // ⚠️ 别忘这一行：重新赋值才能让 QML 检测到变化
+                                Shared.AppState.clearModes = Shared.AppState.clearModes
+
                             } else {
                                 // 更新单个航点
                                 missionModel.updateWaypointById(
@@ -357,6 +419,7 @@ CustomPopup {
                                             0, // 环绕模式类型
                                             0, 0, 0 // 0拍照航点 1抛投航点 2环绕模式
                                             )
+
                             }
                             popup.close()
                         }

@@ -1,18 +1,16 @@
 ﻿import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
-
 import VKGroundControl
 import Controls
 import ScreenTools
 import VkSdkInstance
-
 Flickable {
     id: root
     height: parent.height
     width: parent.width
     contentHeight: mainColumn.implicitHeight
-    
+
     property bool isBattery: false
     property real buttonFontSize: 30 * ScreenTools.scaleWidth
     property real textWidth: 200 * ScreenTools.scaleWidth
@@ -35,7 +33,7 @@ Flickable {
         Item {
             width: parent.width
             height: 60 * ScreenTools.scaleWidth
-            
+
             Text {
                 width: parent.width
                 height: parent.height
@@ -70,13 +68,147 @@ Flickable {
             actionParameterName: "FS_CONF_A_2"
             isBatteryMode: root.isBattery
         }
+
+        // 标题
+        Item {
+            width: parent.width
+            height: 60 * ScreenTools.scaleWidth
+
+            Text {
+                width: parent.width
+                height: parent.height
+                anchors.centerIn: parent
+                text: qsTr("避障管理")
+                font.pixelSize: buttonFontSize
+                font.bold: false
+                horizontalAlignment: Text.AlignHCenter
+                verticalAlignment: Text.AlignVCenter
+                color: fontColor
+            }
+        }
+
+        Obstacle_Avoidance_Section {
+            id: obstacle_avoidance_Section
+            width: parent.width
+            obssectionTitle: qsTr("避障设置")
+            obstacle_avoidance_ParameterName: "OBAVOID_DIST"
+            // capacityParameterName: "VCAP2_LOW_VAL"
+            obstacle_avoidance_mode_ParameterName: "OBAVOID_ACT"
+            // isBatteryMode: root.isBattery
+        }
+    }
+
+    component Obstacle_Avoidance_Section: Item {
+        id: obstacle_avoidance_section
+        height: obstacle_avoidance_Column.height
+
+        property string obssectionTitle: ""
+        property string obstacle_avoidance_ParameterName: ""
+        // property string capacityParameterName: ""
+        property string obstacle_avoidance_mode_ParameterName: ""
+        // property bool isBatteryMode: false
+
+        Rectangle {
+            width: parent.width
+            height: parent.height
+            color: "transparent"
+            border.color: root.fontColor
+            border.width: root.borderWidth
+            radius: root.borderRadius
+        }
+
+        Column {
+            id: obstacle_avoidance_Column
+            width: parent.width
+            spacing: root.contentSpacing
+
+            // 顶部间距
+            Item {
+                width: parent.width
+                height: root.contentSpacing
+            }
+
+            // 标题
+            Item {
+                width: parent.width
+                height: 40 * ScreenTools.scaleWidth
+
+                Text {
+                    width: parent.width
+                    height: parent.height
+                    anchors.left: parent.left
+                    anchors.leftMargin: root.sideMargin
+                    text: obstacle_avoidance_section.obssectionTitle
+                    font.pixelSize: root.buttonFontSize * 5 / 6
+                    font.bold: false
+                    horizontalAlignment: Text.AlignLeft
+                    verticalAlignment: Text.AlignVCenter
+                    color: root.fontColor
+                }
+            }
+
+
+
+            // 避障距离设置
+            NumericParameterControl {
+                visible: true
+                width: parent.width - 60 * ScreenTools.scaleWidth
+                height: 60 * ScreenTools.scaleWidth
+                anchors.horizontalCenter: parent.horizontalCenter
+                labelName: qsTr("避障距离")
+                unit: "m"
+                parameterName: obstacle_avoidance_section.obstacle_avoidance_ParameterName
+                fixNum: 0
+                maxValue: 8
+                minValue: 2
+                valueType: 9
+                textWidth: 240 * ScreenTools.scaleWidth
+                parameterValue: VkSdkInstance.vehicleManager.activeVehicle.parameters[parameterName] || 0
+            }
+
+            // NumericParameterControl {
+            //     visible: section.isBatteryMode
+            //     width: parent.width - 60 * ScreenTools.scaleWidth
+            //     height: 60 * ScreenTools.scaleWidth
+            //     anchors.horizontalCenter: parent.horizontalCenter
+            //     labelName: qsTr("低电量值")
+            //     unit: "%"
+            //     fixNum: 0
+            //     parameterName: section.capacityParameterName
+            //     maxValue: 100
+            //     minValue: 1
+            //     valueType: 1
+            //     textWidth: 240 * ScreenTools.scaleWidth
+            //     parameterValue: VkSdkInstance.vehicleManager.activeVehicle.parameters[parameterName] || 0
+            // }
+
+            // 触发动作选择
+            ParameterComboBox {
+                width: parent.width - 60 * ScreenTools.scaleWidth
+                anchors.horizontalCenter: parent.horizontalCenter
+                parameterName: obstacle_avoidance_section.obstacle_avoidance_mode_ParameterName
+                currentValue: VkSdkInstance.vehicleManager.activeVehicle.parameters[obstacle_avoidance_section.obstacle_avoidance_mode_ParameterName]
+                labelName: qsTr("避障触发动作")
+                customModel: ListModel {
+                    ListElement { text: qsTr("不开启") }
+                    ListElement { text: qsTr("悬停") }
+                    ListElement { text: qsTr("爬高") }
+                }
+            }
+
+            // 底部间距
+            Item {
+                width: parent.width
+                height: root.contentSpacing
+            }
+        }
     }
 
     // 电池保护组件
     component BatteryProtectionSection: Item {
         id: section
         height: protectionColumn.height
-        
+
         property string sectionTitle: ""
         property string voltageParameterName: ""
         property string capacityParameterName: ""
@@ -107,7 +239,7 @@ Flickable {
             Item {
                 width: parent.width
                 height: 40 * ScreenTools.scaleWidth
-                
+
                 Text {
                     width: parent.width
                     height: parent.height

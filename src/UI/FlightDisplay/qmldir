@@ -18,3 +18,4 @@ VK_StartMission                                 1.0 VK_StartMission.qml
 VKReturn                                        1.0 VKReturn.qml
 MainVKToolBar                                   1.0 MainVKToolBar.qml
 MissionOptionRow                                1.0 MissionOptionRow.qml
+singleton AppState                              1.0 AppState.qml

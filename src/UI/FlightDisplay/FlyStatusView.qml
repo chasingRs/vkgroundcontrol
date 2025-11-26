@@ -25,6 +25,8 @@ import VKGroundControl.ScanMissionModel 1.0
 import VKGroundControl.AreaMissionModel 1.0
 import VkSdkInstance 1.0
 
+import "qrc:/qml/FlightDisplay" as Shared
+
 Item {
       id: _root
       property bool showFlowView: false
@@ -38,7 +40,7 @@ Item {
             height: 700 * ScreenTools.scaleWidth
             x: (parent.width - width) / 2
             y: (parent.height - height) / 2
-            
+
             background: Rectangle {
                   color: "#101820"
                   border.color: "#2EE59D"
@@ -50,19 +52,19 @@ Item {
                   color: "transparent"
                   radius: 15 * ScreenTools.scaleWidth
                   clip: true
-                  
+
                   Loader {
                         id: flowLoader
                         anchors.fill: parent
                         active: true  // 始终保持激活，保留状态
                         source: "FlowView.qml"
-                        
+
                         Connections {
                               target: flowLoader.item
                               function onCloseRequested() {
                                     flowViewDialog.close()
                               }
-                              
+
                               function onLowWaterLevelAlert() {
                                     // 收到低液位警报信号，自动打开对话框
                                     console.log("📢 FlyStatusView 收到低液位警报，打开清洗界面对话框")
@@ -83,7 +85,11 @@ Item {
             }
             spacing: 20 * ScreenTools.scaleWidth
 
+
+
             TextButton {
+                  id:clean_btn
+                  visible: Shared.AppState.appMode === 0
                       buttonText: qsTr("进入清洗界面")
                       height: button_height
                       width: 200 * ScreenTools.scaleWidth
@@ -283,18 +289,32 @@ Item {
                 topMargin: 28 * ScreenTools.scaleWidth
             }
           Button{
+                id:shuibeng_btn
+                property int isopen : 0
               width:  70 * ScreenTools.scaleWidth
               height:  70 * ScreenTools.scaleWidth
               visible: !servoPopup.isVisible
               onClicked: {
-                  servoPopup.isVisible=!servoPopup.isVisible
+                  // servoPopup.isVisible=!servoPopup.isVisible
+
+                    if(isopen===0)
+                    {
+                          isopen = 1 ;
+                          MyTcpClient.send_isopen_pump(0);
+                    }
+                    else
+                    {
+                          isopen = 0 ;
+                        MyTcpClient.send_isopen_pump(1);
+                    }
               }
               background:Rectangle{
                   anchors.fill: parent
-                  color: "#00000000"
+                  color:  "#00000000"
                   Image{
                       anchors.fill: parent
-                      source: "/qmlimages/icon/duoji.png"
+                      source: shuibeng_btn.isopen ===1 ? "qrc:/qmlimages/icon/shuibeng_green.png" : "qrc:/qmlimages/icon/shuibeng_red.png"
+                          /*"/qmlimages/icon/duoji.png"*/
                   }
               }
           }

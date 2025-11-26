@@ -44,6 +44,7 @@ Flickable {
     property int turnMethod: 0 // 0: auto turn, 1: fixed point turn
     property int hoverTime: 0 // hover time in seconds
     property int missionMode: 1 // 1: no mission, 2: photo mission
+     property int clearMode: 1 // 1: open, 2: close
     property int photoMode: 2 // 2: time-based, 3: distance-based
 
     // Layout constants
@@ -211,6 +212,25 @@ Flickable {
                     missionMode = index === 0 ? 1 : 2
                 }
             }
+
+            // SettingOptionRow {
+            //     id: clearSelector
+            //     width: containerWidth
+            //     anchors.horizontalCenter: parent.horizontalCenter
+
+            //     labelText: qsTr("水泵开启")
+            //     leftButtonText: qsTr("开启")
+            //     rightButtonText: qsTr("关闭")
+            //     selectedIndex: clearMode === 1 ? 0 : 1
+            //     buttonFontSize: stripLineSettingsRoot.buttonFontSize
+            //     backgroundColor: stripLineSettingsRoot.backgroundColor
+            //     fontColor: stripLineSettingsRoot.fontColor
+            //     singleButtonWidth: stripLineSettingsRoot.singleButtonWidth
+
+            //     onSelectionChanged: function (index) {
+            //         clearMode = index === 0 ? 1 : 2
+            //     }
+            // }
 
             // Photo mode selection (visible when photo mission is selected)
             SettingOptionRow {

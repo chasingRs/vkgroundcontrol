@@ -242,7 +242,8 @@ Item {
                 buttonText: qsTr("打开")
                 textColor: "black"
                 onClicked: {
-                    executeServoAction(1)
+                    // executeServoAction(1)
+                    MyTcpClient.send_isopen_pump(0);
                 }
             }
 
@@ -284,7 +285,8 @@ Item {
                 buttonText: qsTr("关闭")
                 textColor: "black"
                 onClicked: {
-                    executeServoAction(-1)
+                    MyTcpClient.send_isopen_pump(1);
+                    // executeServoAction(-1)
                 }
             }
         }
